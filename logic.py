@@ -1,6 +1,9 @@
 import spacy
 import en_core_web_sm # Install with python3 -m spacy download en_core_web_sm
 from spacy.symbols import nsubj, VERB
+from spew import Text
+from customclass import *
+import random
 
 class Tagger():
     battle_trigger = ['fight', 'slit', 'cut']
@@ -41,3 +44,7 @@ class Tagger():
                         trigger_mode['BATTLE'] = True
 
         return trigger_mode
+
+    def generate_prompt(self, generator: Text, tag, status: Status, length=300):
+        prompt = ""
+        generator.generate(prompt, length)
