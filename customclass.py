@@ -1,3 +1,4 @@
+
 class Event():
     who = None
     what = "dies"
@@ -50,17 +51,22 @@ class Character():
     quests = []
     name = ""
     modifier = ""
+    language = ""
+    character_class = {'name':"", 'proficiency':""}
+    level = 1
+
     skill = {'name':"", 'max_damage':0, 'min_damage':0, 'tendency':0, 'expression':"", 'verb':['']} #tendency : 쏠리는 비율 - 1에 가까우면 크리티컬 잘 터짐
     def __init__(self, stats, items):
         self.stats = stats
         self.items = items
-    def set_skill(self, skill):
-        self.skill = skill
     def __str__(self):
         return self.name
+    def set_skill(self, skill):
+        self.skill = skill
+    def get_hit_point(self):
+        return self.level
 
 class Player(Character):
-
     def __init__(self, stats, items, name):
         self.stats = stats
         self.items = items
