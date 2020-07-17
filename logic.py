@@ -45,6 +45,34 @@ class Tagger():
 
         return trigger_mode
 
+    def extract(self, sentence):
+        '''
+        Extracts subject, verb & object.
+        '''
+        tokenized = self.nlp(sentence)
+        return tokenized
+
+    def pick_pos(self, POS, sentence):
+        tokens_with_pos = []
+        for token in self.extract(sentence):
+            #print(token.text)
+            if token.pos == POS:
+                tokens_with_pos.append(token.text)
+        return tokens_with_pos
+
+    def pick_subj(self, sentence):
+        subjects = []
+        for token in self.extract(sentence):
+            #print(token.text)
+            if token.dep == nsubj:
+                subjects.append(token.text)
+        return subjects
+
     def generate_prompt(self, generator: Text, tag, status: Status, length=300):
-        prompt = ""
+        '''
+        Generates a prompt describing the current situation
+        '''
+        prompt = status.world_prompt
+        # SUBJ[당시 턴이었던] VERB ACTION . SUBJ[Player] VERB[Result]
+        prompt += status.current_turn_character.name + " " + 
         generator.generate(prompt, length)

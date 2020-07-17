@@ -7,13 +7,21 @@ class Text():
     model = None
     nlp = None
     sentencizer = None
-    def __init__(self, seed=42):
-        self.tokenizer = GPT2Tokenizer.from_pretrained("gpt2-xl")
+    def __init__(self, seed=42, model_name="ctrl"): # use HF model name
+        self.tokenizer = GPT2Tokenizer.from_pretrained("ctrl")
         # add the EOS token as PAD token to avoid warnings
-        self.model = TFGPT2LMHeadModel.from_pretrained("gpt2-xl", pad_token_id=self.tokenizer.eos_token_id)
+        self.model = TFGPT2LMHeadModel.from_pretrained("ctrl", pad_token_id=self.tokenizer.eos_token_id)
         tf.random.set_seed(42)
         self.nlp = English()
-        nlp.add_pipe(nlp.create_pipe('sentencizer'))
+        self.nlp.add_pipe(self.nlp.create_pipe('sentencizer'))
+
+    def sentences(self, string):
+        '''
+        Divide string into a array of str(sentence)
+        '''
+        doc = self.nlp(string)
+        return list(map(str,list(doc.sents)))
+
 
     def generate(self, prompt="You throw my pants at the monster, temporarily blinding it.", length=50, remove_prompt=False):
         # encode context the generation is conditioned on
@@ -36,16 +44,19 @@ class Text():
         return t
 
     def generateFiltered(self, prompt, sentence_count):
-        doc = nlp(prompt)
+        doc = self.nlp(prompt)
         sentence_len = len(list(doc.sents))
         delta = ""
         while True:
-            created = self.generate(prompt + delta, 50)
-            doc = nlp(created.replace(prompt, '', 1))
-            doc = list(doc.sents)[:2]  #EXTRACT 2 SENTENCES
+            created = self.generate(prompt + delta, len(prompt + delta) + 50)
+            doc = self.nlp(created.replace(prompt, '', 1))
+            doc = self.sentences(created.replace(prompt, '', 1))[:1]  #EXTRACT 1 SENTENCE
             delta += ' '.join(map(str,doc))
-            doc = nlp(delta)
+            doc = self.nlp(delta)
             print(delta)
             if(len(list(doc.sents)) >= sentence_count):
                 break
         return delta
+
+    def generateResponse(self, prompt):
+        return self.generateFiltered(prompt, 1)

@@ -19,6 +19,7 @@ class Status():
     characters = []
     players = []
     future_events = []
+    current_turn_character = None
 
     def in_battle(self):
         return self.mode['BATTLE']
