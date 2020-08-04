@@ -68,11 +68,14 @@ class Tagger():
                 subjects.append(token.text)
         return subjects
 
-    def generate_prompt(self, generator: Text, tag, status: Status, length=300):
+    def generate_prompt(self, generator: Text, tag, status: World, length=300):
         '''
         Generates a prompt describing the current situation
         '''
         prompt = status.world_prompt
         # SUBJ[당시 턴이었던] VERB ACTION . SUBJ[Player] VERB[Result]
-        prompt += status.current_turn_character.name + " " + 
+        prompt += status.current_situation_prompt + ". " + str(status.current_turn_character) + status.pc_action
         generator.generate(prompt, length)
+
+    def uses_item(action):
+        return False

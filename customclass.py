@@ -1,5 +1,5 @@
 
-class Event():
+class Action():
     who = None
     what = "dies"
     explanation = "by hunger"
@@ -10,8 +10,7 @@ class Event():
     def get_prompt(self):
         return str(self.who) + self.what + self.explanation
 
-class Status():
-
+class World():
     mode = {'NONE': True, 'BATTLE': False, 'TRADE': False, 'QUEST': False}
     recent_events = []
     world_prompt=""
@@ -20,6 +19,7 @@ class Status():
     players = []
     future_events = []
     current_turn_character = None
+    pc_action = ""
 
     def in_battle(self):
         return self.mode['BATTLE']
@@ -29,7 +29,7 @@ class Status():
         return self.mode['QUEST']
 
 class Quest():
-    def generate(self, status: Status()):
+    def generate(self, status: World):
         giver = Character(random.choice(status.characters))
         while True:
             if giver not in status.players:
@@ -55,8 +55,10 @@ class Character():
     language = ""
     character_class = {'name':"", 'proficiency':""}
     level = 1
-
     skill = {'name':"", 'max_damage':0, 'min_damage':0, 'tendency':0, 'expression':"", 'verb':['']} #tendency : 쏠리는 비율 - 1에 가까우면 크리티컬 잘 터짐
+    valid_target_action = []
+    valid_action = []
+
     def __init__(self, stats, items):
         self.stats = stats
         self.items = items
@@ -66,6 +68,8 @@ class Character():
         self.skill = skill
     def get_hit_point(self):
         return self.level
+    def valid_target_action(self, action):
+        return action in self.valid_target_action
 
 class Player(Character):
     def __init__(self, stats, items, name):
@@ -75,6 +79,19 @@ class Player(Character):
     def __str__(self):
         return "You"
 
+class Effect():
+    delay: int
+    amount: int
+    name: str
+    
+    def __init__(self, delay, amount, name=""):
+        self.name = name
+        self.amount = amount
+        self.delay = delay
+
+class Damage():
+    target: Character
+    spec = None #Array of effects
 
 class Item():
     name = ""
@@ -83,7 +100,23 @@ class Item():
         self.name = name
         self.spec = spec
 
+class Result():
+    damage: Damage
+    item: Item
+    item_delta: int
+    new_world: None
+    
+
 class Stat():
     strength, dexterity, constitution, intelligence, wisdom, charisma = (0,0,0,0,0,0)
     def __init__(self, strength, dexterity, constitution, intelligence, wisdom, charisma):
         self.strength, self.dexterity, self.constitution, self.intelligence, self.wisdom, self.charisma = strength, dexterity, constitution, intelligence, wisdom, charisma
+
+
+class Turn():
+    character: Character
+    action: Action
+    target: Character
+    result: Result
+
+    
