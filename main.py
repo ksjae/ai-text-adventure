@@ -5,6 +5,7 @@ from spacy.symbols import NOUN, VERB
 import os, sys
 import collections
 
+
 '''
 FUNCTIONS
 '''
@@ -75,8 +76,9 @@ while True:
                     event = Event(action=token.text)
                     for child in token.children:
                         text = child.text
-                        if child.text == 'it': # special treatment
-
+                        if child._.in_coref: # special treatment for it/him/...
+                            text = child._.coref_clusters[0].main.text
+                        
                         if 'subj' in child.dep_:
                             event.source = text
                         elif child.dep_ == 'dobj':

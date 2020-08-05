@@ -4,6 +4,7 @@ from spacy.symbols import nsubj, VERB
 from spew import Text
 from customclass import *
 import random
+import neuralcoref
 
 class Tagger():
     battle_trigger = ['fight', 'slit', 'cut']
@@ -20,7 +21,7 @@ class Tagger():
 
     def __init__(self):
         self.nlp = spacy.load('en_core_web_sm')
-
+        neuralcoref.add_to_pipe(self.nlp)
         f = open('data/battle_trigger.txt', 'r+')
         self.battle_trigger = [line for line in f.readlines()]
         f.close()
