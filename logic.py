@@ -57,7 +57,7 @@ class Tagger():
         for token in self.extract(sentence):
             #print(token.text)
             if token.pos == POS:
-                tokens_with_pos.append(token.text)
+                tokens_with_pos.append(token)
         return tokens_with_pos
 
     def pick_subj(self, sentence):

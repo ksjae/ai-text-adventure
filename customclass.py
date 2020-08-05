@@ -20,6 +20,7 @@ class World():
     future_events = []
     current_turn_character = None
     pc_action = ""
+    location = ""
 
     def in_battle(self):
         return self.mode['BATTLE']
@@ -105,18 +106,64 @@ class Result():
     item: Item
     item_delta: int
     new_world: None
-    
 
 class Stat():
     strength, dexterity, constitution, intelligence, wisdom, charisma = (0,0,0,0,0,0)
     def __init__(self, strength, dexterity, constitution, intelligence, wisdom, charisma):
         self.strength, self.dexterity, self.constitution, self.intelligence, self.wisdom, self.charisma = strength, dexterity, constitution, intelligence, wisdom, charisma
 
+class Event():
+    """
+    A simple form of event (str action, source, destination, (optional) text)
+    """
+    action = ""
+    source = ""
+    destination = ""
+    _original_description = ""
+    def __init__(self, **kwargs):
+        self.action = kwargs.get('action', "nothing")
+        self.source = kwargs.get('source', "nobody")
+        self.destination = kwargs.get('destination', "")
+        self._original_description = kwargs.get('text', "")
+    def __contains__(self, item):
+        if item == self.action:
+            return True
+        elif item == self.source:
+            return True
+        elif item == self.destination:
+            return True
+        return False
+    def __str__(self):
+        if self._original_description:
+            return self._original_description
+        return self.action + ' done by ' + self.source + ' to ' + self.destination
+
+class Events():
+    """
+    For each turn, Events contain array of Event.
+    """
+    __array = []
+    def __contains__(self, item):
+        for i in self.__array:
+            if item in i:
+                return True
+        return False
+    def __iter__(self):
+        return _self._array
+    def __str__(self):
+        string = ""
+        for i in self.__array:
+            string += (str(i)+'\n')
+        return string
+
+    def append(self, item):
+        if not isinstance(item, Event):
+            raise ValueError
+        self.__array.append(item)
 
 class Turn():
     character: Character
     action: Action
     target: Character
     result: Result
-
     
