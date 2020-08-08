@@ -20,7 +20,7 @@ class Tagger():
     nlp = None
 
     def __init__(self):
-        self.nlp = spacy.load('en_core_web_md')
+        self.nlp = spacy.load('en_core_web_sm')
         neuralcoref.add_to_pipe(self.nlp)
         merge_nps = self.nlp.create_pipe("merge_noun_chunks")
         self.nlp.add_pipe(merge_nps)

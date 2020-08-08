@@ -29,6 +29,7 @@ print("TEST MODE - SKIPPING SETUP")
 prompt = "You entered the dungeon. You killed monsters. The monsters poisoned you. You see a locked door. You go in the door."
 print('prompt:', prompt)
 #print(generator.generate(prompt, 200, remove_prompt=True))
+'''
 if 'player' not in savefile.keys():
     player = Player(
             Stat(1,2,3,4,5,6),
@@ -38,7 +39,7 @@ if 'player' not in savefile.keys():
 else :
     player = savefile['player']
 
-'''
+
 print("You, as "+player.name+", will now experience a unique adventure.")
 print("To start adventure, type a short summary of what happened. *Newline(Enter key) will terminate input*")
 print("For instance, \""+player.name+" was being chased by an army of robots. The robot uprising had begun. With only a knife in his hands, he did not know what to do.\"")
