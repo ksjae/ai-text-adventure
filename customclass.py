@@ -1,3 +1,5 @@
+import collections
+import random
 
 class Action():
     who = None
@@ -10,17 +12,30 @@ class Action():
     def get_prompt(self):
         return str(self.who) + self.what + self.explanation
 
-class World():
+class Scope():
+    """
+    A vague representation of current events. Has the following - 
+    1. TIME, LOCATION
+    2. CURRENT PLAYERS(multiplayer-proof)
+    3. CURRENT CHARACTERS(incl. enemy)
+    4. EXPLICIT OBJECTS(ex. cup(in a bar))
+    """
+    Relativetime = collections.namedtuple("Relativetime","year month day hour minute second")
+    location = ""
+    time =  Relativetime(1,1,1,0,0,0)
+    characters = []
+    players = []
+    objects = []
+
+class World(Scope):
     mode = {'NONE': True, 'BATTLE': False, 'TRADE': False, 'QUEST': False}
     recent_events = []
     world_prompt=""
     current_situation_prompt=""
-    characters = []
     players = []
     future_events = []
     current_turn_character = None
     pc_action = ""
-    location = ""
 
     def in_battle(self):
         return self.mode['BATTLE']
@@ -28,6 +43,9 @@ class World():
         return self.mode['TRADE']
     def in_quest(self):
         return self.mode['QUEST']
+
+    def __init__(self, **kwargs):
+        pass
 
 class Quest():
     def generate(self, status: World):
@@ -47,11 +65,17 @@ class Quest():
     def check_fin(self):
         return False
 
+class Stat():
+    strength, dexterity, constitution, intelligence, wisdom, charisma = (0,0,0,0,0,0)
+    def __init__(self, strength, dexterity, constitution, intelligence, wisdom, charisma):
+        self.strength, self.dexterity, self.constitution, self.intelligence, self.wisdom, self.charisma = strength, dexterity, constitution, intelligence, wisdom, charisma
+
 class Character():
-    stats = (0,0,0,0,0,0)
+    stats: Stat
     items = []
     quests = []
     name = ""
+    alt_names = []
     modifier = ""
     language = ""
     character_class = {'name':"", 'proficiency':""}
@@ -60,9 +84,10 @@ class Character():
     valid_target_action = []
     valid_action = []
 
-    def __init__(self, stats, items):
+    def __init__(self, stats=Stat(0,0,0,0,0,0), items=[], name=""):
         self.stats = stats
         self.items = items
+        self.name = name
     def __str__(self):
         return self.name
     def set_skill(self, skill):
@@ -73,10 +98,6 @@ class Character():
         return action in self.valid_target_action
 
 class Player(Character):
-    def __init__(self, stats, items, name):
-        self.stats = stats
-        self.items = items
-        self.name = name
     def __str__(self):
         return "You"
 
@@ -106,11 +127,6 @@ class Result():
     item: Item
     item_delta: int
     new_world: None
-
-class Stat():
-    strength, dexterity, constitution, intelligence, wisdom, charisma = (0,0,0,0,0,0)
-    def __init__(self, strength, dexterity, constitution, intelligence, wisdom, charisma):
-        self.strength, self.dexterity, self.constitution, self.intelligence, self.wisdom, self.charisma = strength, dexterity, constitution, intelligence, wisdom, charisma
 
 class Event():
     """
@@ -143,18 +159,22 @@ class Events():
     For each turn, Events contain array of Event.
     """
     __array = []
+    item_limit = 0
     def __contains__(self, item):
         for i in self.__array:
             if item in i:
                 return True
         return False
     def __iter__(self):
-        return _self._array
+        return iter(self.__array)
     def __str__(self):
         string = ""
         for i in self.__array:
             string += (str(i)+'\n')
         return string
+    def __init__(self, **kwargs):
+        if 'item_limit' in kwargs.keys:
+            self.item_limit=int(kwargs['item_limit'])
 
     def append(self, item):
         if not isinstance(item, Event):

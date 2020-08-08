@@ -58,16 +58,6 @@ while True:
         backlog = backlog[-backlog_sentence_count:]
         backlog.append(action)
         string = tagger.nlp(action)
-        '''
-        for chunk in string.noun_chunks:
-            if chunk.root.head.pos == VERB:
-                if chunk.root.dep_ == 'nsubj':
-                    print(chunk.root.text+'('+chunk.text+')','has',chunk.root.head.lemma)
-                elif chunk.root.dep_ == 'dobj':
-                    print('action |',chunk.root.head.text,'| applied to |', chunk.root.text+'('+chunk.text+')')
-                elif chunk.root.dep_ == 'nsubjpass':
-                    print('action |',chunk.root.head.text,'| applied to |', chunk.root.text+'('+chunk.text+')')
-        '''
         events = Events()
         for token in string:
             if token.pos == VERB:
