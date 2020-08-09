@@ -5,7 +5,7 @@ from spew import Text
 from customclass import *
 import random
 import neuralcoref
-from strsimpy.optimal_string_alignment import OptimalStringAlignment
+from strsimpy.weighted_levenshtein import WeightedLevenshtein
 from spacy_wordnet.wordnet_annotator import WordnetAnnotator 
 
 class Tagger():
@@ -20,7 +20,7 @@ class Tagger():
     quest_verb = []
 
     nlp = None
-    optimal_string_alignment = OptimalStringAlignment()
+    word_distance_func = WeightedLevenshtein(substitution_cost_fn=lambda x,y:0.9, insertion_cost_fn=lambda x:1, deletion_cost_fn=lambda x:0.3)
 
     def __init__(self):
         self.nlp = spacy.load('en_core_web_sm')
@@ -76,21 +76,14 @@ class Tagger():
         return subjects
 
     def similarity(self, origin, target):
-        if not isinstance(target, spacy.tokens.token.Token):
-            token = self.nlp(target)[-1]
-        synonyms = set()
-        for i in token._.wordnet.synsets():
-            synonyms = synonyms.union(i.lemma_names())
-        distances = [self.optimal_string_alignment.distance(origin, synonym) for synonym in synonyms]
-        print(distances)
-        if len(distances) == 0 or len(str(target)) > 10: # A big red car
-            distances.append(self.optimal_string_alignment.distance(origin, target))
+        target = str(target)
         try:
-            return 1/min(distances)
-        except TypeError:
+            return 1/self.word_distance_func.distance(origin.lower(), target.lower())
+        except:
             print('ORIGIN TYPE', type(origin), '. TARGET TYPE', type(target))
+            print(origin, target)
 
-    def entity(self, name, Scene: Scene, certainty=0.7):
+    def entity(self, name, Scene: Scene, certainty=0.277):
         """
         Returns an entity(a Character class) best matching from current Scene
         plain(a tree), named($PLAYER_NAME), or related(dragon)
