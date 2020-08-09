@@ -12,7 +12,7 @@ class Action():
     def get_prompt(self):
         return str(self.who) + self.what + self.explanation
 
-class Scope():
+class Scene():
     """
     A vague representation of current events. Has the following - 
     1. TIME, LOCATION
@@ -27,7 +27,7 @@ class Scope():
     players = []
     objects = []
 
-class World(Scope):
+class World(Scene):
     mode = {'NONE': True, 'BATTLE': False, 'TRADE': False, 'QUEST': False}
     recent_events = []
     world_prompt=""
@@ -79,9 +79,7 @@ class Character():
     valid_target_action = []
     valid_action = []
 
-    def __init__(self, stats, items=[], name=""):
-        self.stats = stats
-        self.items = items
+    def __init__(self, name=""):
         self.name = name
     def __str__(self):
         return self.name

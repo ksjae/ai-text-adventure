@@ -5,6 +5,8 @@ from spew import Text
 from customclass import *
 import random
 import neuralcoref
+from strsimpy.optimal_string_alignment import OptimalStringAlignment
+from spacy_wordnet.wordnet_annotator import WordnetAnnotator 
 
 class Tagger():
     battle_trigger = ['fight', 'slit', 'cut']
@@ -18,10 +20,12 @@ class Tagger():
     quest_verb = []
 
     nlp = None
+    optimal_string_alignment = OptimalStringAlignment()
 
     def __init__(self):
         self.nlp = spacy.load('en_core_web_sm')
         neuralcoref.add_to_pipe(self.nlp)
+        self.nlp.add_pipe(WordnetAnnotator(self.nlp.lang))
         merge_nps = self.nlp.create_pipe("merge_noun_chunks")
         self.nlp.add_pipe(merge_nps)
         f = open('data/battle_trigger.txt', 'r+')
@@ -71,20 +75,35 @@ class Tagger():
                 subjects.append(token.text)
         return subjects
 
-    def entity(self, name, scope: Scope, certainty=0.4):
+    def similarity(self, origin, target):
+        if not isinstance(target, spacy.tokens.token.Token):
+            token = self.nlp(target)[-1]
+        synonyms = set()
+        for i in token._.wordnet.synsets():
+            synonyms = synonyms.union(i.lemma_names())
+        distances = [self.optimal_string_alignment.distance(origin, synonym) for synonym in synonyms]
+        print(distances)
+        if len(distances) == 0 or len(str(target)) > 10: # A big red car
+            distances.append(self.optimal_string_alignment.distance(origin, target))
+        try:
+            return 1/min(distances)
+        except TypeError:
+            print('ORIGIN TYPE', type(origin), '. TARGET TYPE', type(target))
+
+    def entity(self, name, Scene: Scene, certainty=0.7):
         """
-        Returns an entity(a Character class) best matching from current scope
+        Returns an entity(a Character class) best matching from current Scene
         plain(a tree), named($PLAYER_NAME), or related(dragon)
 
         For plain items, a 'suitable' character with 0 attributes will be returned.
 
         *Greedily searches word with closest similarity*
         """
-        x = self.nlp(name)
-        score = {i: self.nlp(i.name).similarity(x) for i in scope.characters}
+        x = str(name)
+        score = {i: self.similarity(i.name, x) for i in Scene.characters}
         score.update({
-            i: self.nlp(i.name).similarity(x) for player in scope.players for i in [player.name] + player.alt_names})
-        score.update({i: self.nlp(i.name).similarity(x) for i in scope.objects})
+            i: self.similarity(i.name, x) for player in Scene.players for i in [player.name] + player.alt_names})
+        score.update({i: self.similarity(i.name, x) for i in Scene.objects})
         probable_item = max(score.items(), key=lambda x: x[1])
         print('Chose', str(probable_item[0]), probable_item[1])
         if probable_item[1] < certainty:
@@ -111,10 +130,10 @@ if __name__ == "__main__":
     TEST CODE
     """
     tag_test = Tagger()
-    scope_test = Scope()
-    scope_test.characters.append(Character(name="the wizard"))
-    scope_test.characters.append(Character(name="King Jorg the third"))
-    scope_test.characters.append(Player(name="You"))
+    Scene_test = Scene()
+    Scene_test.characters.append(Character(name="the wizard"))
+    Scene_test.characters.append(Character(name="King Jorg the third"))
+    Scene_test.characters.append(Character(name="You"))
     while True:
         i = input()
-        print(str(tag_test.entity(name=i, scope=scope_test)))
+        print(str(tag_test.entity(name=i, Scene=Scene_test)))
