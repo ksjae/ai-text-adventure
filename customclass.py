@@ -1,16 +1,28 @@
 import collections
 import random
 
-class Action():
-    who = None
-    what = "dies"
-    explanation = "by hunger"
-    def __init__(self, character, event, explanation):
-        self.who = character
-        self.what = event
-        self.explanation = explanation
-    def get_prompt(self):
-        return str(self.who) + self.what + self.explanation
+class QuantizedAction():
+    """
+    Primarily for passing item amounts
+    """
+    def __init__(self, source, destination, amount, item = None):
+        self.source = source
+        self.destination = destination
+        self.amount = amount
+        if item is not None and isinstance(item, Item):
+            self.item = item
+        return self
+
+class FightAction(QuantizedAction):
+    def __init__(self, source, destination, amount, skill = None):
+        if not (isinstance(source, Character) and isinstance(destination, Character)):
+            raise ValueError
+        self.source = source
+        self.destination = destination
+        self.amount = amount
+        if skill is not None and isinstance(skill, Affects):
+            self.item = item
+        return self
 
 class Scene():
     """
@@ -19,15 +31,17 @@ class Scene():
     2. CURRENT PLAYERS(multiplayer-proof)
     3. CURRENT CHARACTERS(incl. enemy)
     4. EXPLICIT OBJECTS(ex. cup(in a bar))
-    """
+
     Relativetime = collections.namedtuple("Relativetime","year month day hour minute second")
     location = ""
     time =  Relativetime(1,1,1,0,0,0)
     characters = []
     players = []
     objects = []
+    """
 
 class World(Scene):
+    """
     mode = {'NONE': True, 'BATTLE': False, 'TRADE': False, 'QUEST': False}
     recent_events = []
     world_prompt=""
@@ -36,6 +50,7 @@ class World(Scene):
     future_events = []
     current_turn_character = None
     pc_action = ""
+    """
 
     def in_battle(self):
         return self.mode['BATTLE']
@@ -66,6 +81,7 @@ class Quest():
         return False
 
 class Character():
+    """
     stats = 0
     items = []
     quests = []
@@ -78,6 +94,7 @@ class Character():
     skill = {'name':"", 'max_damage':0, 'min_damage':0, 'tendency':0, 'expression':"", 'verb':['']} #tendency : 쏠리는 비율 - 1에 가까우면 크리티컬 잘 터짐
     valid_target_action = []
     valid_action = []
+    """
 
     def __init__(self, name=""):
         self.name = name
@@ -91,21 +108,12 @@ class Character():
         return action in self.valid_target_action
 
 
-class Item():
-    name = ""
-    spec = {'visible': False, 'magical': False}
-    def __init__(self, name, spec):
-        self.name = name
-        self.spec = spec
-
 class Event():
     """
     A simple form of event (str action, source, destination, (optional) text)
+
+    action, source, destination
     """
-    action = ""
-    source = ""
-    destination = ""
-    _original_description = ""
     def __init__(self, **kwargs):
         self.action = kwargs.get('action', "nothing")
         self.source = kwargs.get('source', "nobody")
@@ -127,9 +135,9 @@ class Event():
 class Events():
     """
     For each turn, Events contain array of Event.
+
+    item_limit sets limit of events
     """
-    __array = []
-    item_limit = 0
     def __contains__(self, item):
         for i in self.__array:
             if item in i:
@@ -143,31 +151,85 @@ class Events():
             string += (str(i)+'\n')
         return string
     def __init__(self, **kwargs):
-        if 'item_limit' in kwargs.keys:
+        if 'item_limit' in kwargs.keys():
             self.item_limit=int(kwargs['item_limit'])
+        self.__array = []
 
     def append(self, item):
         if not isinstance(item, Event):
             raise ValueError
         self.__array.append(item)
 
+class Item():
+    """
+    Everything, from a sword to players, inherits this class.
+    basic stuff - name, hp, visibility, size, original text description, etc.
+
+    name, hp, visible, visible_targets = [] # Overridden by var 'visible'
+    size, original_text_description, spec, component
+    """
+    def __init__(self, name, **kwargs):
+        self.name = name
+        if 'spec' in kwargs.keys():
+            self.spec = kwargs['spec']
+        self.component = {}
+    def add_component(self, comp):
+        self.component.update({str(type(comp)): comp})
+    def remove_component(self, comp):
+        if not isinstance(comp, str):
+            comp = str(type(comp))
+        self.component.pop(comp)
+    def get(self, comp):
+        """
+        Returns component
+        """
+        if not isinstance(comp, str):
+            comp = str(type(comp))
+        return self.component[comp]
+    def set(self, component_class, **kwargs):
+        self.add_component(component_class(**kwargs))
+        return True
+
+
+
+"""
+COMPONENT CLASS
+"""
 
 class Modifier():
-    delta_stat = 0
+    pass #delta_stat
     
 class Interactable:
-    pass
+
+    def add_response(self, response):
+        responses.append(response)
+        return True
+    def respond(self, history):
+        # Get talks
+        # combine with self._interaction_history
+        # use that to gen text
+        raise NotImplementedError
+    def give_quest(self, history):
+        pass
+    def add_quest(self, quest: Quest):
+        raise NotImplementedError
 
 class Attackable:
-    attacks = []
+
+    def __init__(self):
+        attacks = []
     def get_status(self):
         return True
     def attack(self):
         dmg = 0
         return dmg
+    def add_attack_type(self, *args):
+        for i in args:
+            if isinstance(i, QuantizedAction):
+                self.attacks.append(i)
 
 class Defendable:
-    defenses = []
+
     def defend(self):
         return self.hp
     
@@ -231,9 +293,31 @@ class Movable:
     def set_friction_coefficient(self, mu):
         self.friction_coefficient = mu
 
+class Effect:
+    def __init__(self, name, attribute, amount):
+        self.name = name
+        self.attribute = attribute
+        self.amount
 class Affects:
-    #뭐에게 영향을 어떻게?
-    pass
+    """
+    Defines just the effect - no src, dest
+    name: Effect Name, attr: Attr to modify, amount: Amount
+    """
+    def __init__(self, name, attribute, amount):
+        self.effects = [Effect(name, attribute, amount)]
+    def add_effect(self, name, attribute, amount):
+        self.effects.append = Effect(name, attribute, amount)
+    def remove_effect(self, name):
+        for effect in effects:
+            if effect.name is name:
+                return effect
+    def get_effect_by_name(self, name):
+        for effect in effects:
+            if effect.name is name:
+                return effect
+    def get_effect_list(self):
+        return self.effects
+
 
 class Requires:
     needed_items = []

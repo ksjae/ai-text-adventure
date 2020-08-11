@@ -69,15 +69,28 @@ while True:
                         text = child.text
                         if child._.in_coref: # special treatment for it/him/...
                             text = child._.coref_clusters[0].main.text
-                        
                         if 'subj' in child.dep_:
                             event.source = text
                         elif child.dep_ == 'dobj':
                             event.destination = text
                         elif child.dep_ == 'prep':
                             event.destination = text
-                            
+                        #EXTRACT OBJECT(NOT TARGET)
                     print(event)
+                    # IF OBJECT IS NOT OWNED
+                    # FOR REASONABLE OBJECTS TREAT AS IF JUST APPEARED
+
+                    # IF A NEW OBJECT APPEARS - BE IT ENEMY, ...
+                    # APPLY CLASS(***ABLES)
+                    """
+                    new_obj = get_new_object_with_class()
+                    """
+                    # ROLL STATS
+
+                    # GENERATE RESULT
+
+                    # GENERATE RESPONSE
+                    
                     events.append(event)
         print('\n','='*40)
         print(events,'happened.')
