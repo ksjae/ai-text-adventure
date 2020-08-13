@@ -28,7 +28,7 @@ print("TEST MODE - SKIPPING SETUP")
 
 prompt = "You entered the dungeon. You killed monsters. The monsters poisoned you. You see a locked door. You go in the door."
 print('prompt:', prompt)
-print(generator.generate(prompt, 200, remove_prompt=True))
+print(generator.generate(prompt, 100, remove_prompt=True))
 '''
 if 'player' not in savefile.keys():
     player = Player(
@@ -95,7 +95,8 @@ while True:
         print('\n','='*40)
         print(events,'happened.')
         print('='*40)
-        generated = str(generator.generateFiltered(' '.join(backlog), 2))
+        #generated = str(generator.generateFiltered(' '.join(backlog), 2))
+        generated = str(generator.generate_from_api(' '.join(backlog)))
         backlog.append(generated)
         print(generated)
     except KeyboardInterrupt:

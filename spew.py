@@ -3,6 +3,7 @@ from transformers import TFGPT2LMHeadModel, GPT2Tokenizer, CTRLLMHeadModel, CTRL
 from spacy.lang.en import English
 import torch
 import random
+import requests
 
 class Text():
     tokenizer = None
@@ -31,8 +32,12 @@ class Text():
         doc = self.nlp(string)
         return list(map(str,list(doc.sents)))
 
+    def generate_from_api(self, prompt, url="https://api-inference.huggingface.co/models/gpt2-large"):
+        req = requests.post(url, data=f'"{prompt}"') #Needs double quotes
+        gen_text = req.json()['generated_text']
+        return gen_text
 
-    def generate(self, prompt="You throw my pants at the monster, temporarily blinding it.", length=50, remove_prompt=False):
+    def generate(self, prompt="You throw pants at the monster, temporarily blinding it. The monster tries to attack you, but misses.", length=50, remove_prompt=False):
         # encode context the generation is conditioned on
         input_ids = self.tokenizer.encode(prompt, return_tensors='tf')
         if self.model_type is 'GPT2':
@@ -41,8 +46,8 @@ class Text():
                 do_sample=True, 
                 min_length=length, 
                 max_length=max(2*length, 100),
-                top_k=20, 
-                top_p=0.92, 
+                top_k=0, 
+                top_p=0.9, 
                 num_return_sequences=1,
                 temperature=0.6,
                 repetition_penalty=3
