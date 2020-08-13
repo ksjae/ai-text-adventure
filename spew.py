@@ -1,5 +1,5 @@
 import tensorflow as tf
-from transformers import GPT2LMHeadModel, GPT2Tokenizer, CTRLLMHeadModel, CTRLTokenizer
+from transformers import TFGPT2LMHeadModel, GPT2Tokenizer, CTRLLMHeadModel, CTRLTokenizer
 from spacy.lang.en import English
 import torch
 import random
@@ -19,7 +19,7 @@ class Text():
         else:
             self.tokenizer = GPT2Tokenizer.from_pretrained(model_name)
             # add the EOS token as PAD token to avoid warnings
-            self.model = GPT2LMHeadModel.from_pretrained(model_name, pad_token_id=self.tokenizer.eos_token_id)
+            self.model = TFGPT2LMHeadModel.from_pretrained(model_name, pad_token_id=self.tokenizer.eos_token_id)
         tf.random.set_seed(seed)
         self.nlp = English()
         self.nlp.add_pipe(self.nlp.create_pipe('sentencizer'))
@@ -35,17 +35,17 @@ class Text():
     def generate(self, prompt="You throw my pants at the monster, temporarily blinding it.", length=50, remove_prompt=False):
         # encode context the generation is conditioned on
         input_ids = self.tokenizer.encode(prompt, return_tensors='tf')
-        if self.model_type == 'GPT2':
+        if self.model_type is 'GPT2':
             sample_outputs = self.model.generate(
                 input_ids,
                 do_sample=True, 
                 min_length=length, 
-                max_length=min(2*length, 800),
+                max_length=max(2*length, 100),
                 top_k=20, 
                 top_p=0.92, 
                 num_return_sequences=1,
                 temperature=0.6,
-                repetition_penalty=10
+                repetition_penalty=3
             )
             t = str(self.tokenizer.decode(sample_outputs[0], skip_special_tokens=True))
         elif self.model_type == 'CTRL':
