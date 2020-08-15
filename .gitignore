@@ -6,3 +6,4 @@ include
 lib64
 pyvenv.cfg
 w.code-workspace
+model/pytorch_model.bin

@@ -1,9 +1,10 @@
 import tensorflow as tf
-from transformers import TFGPT2LMHeadModel, GPT2Tokenizer, CTRLLMHeadModel, CTRLTokenizer
+from transformers import GPT2LMHeadModel, GPT2Tokenizer, CTRLLMHeadModel, CTRLTokenizer
 from spacy.lang.en import English
 import torch
 import random
 import requests
+from tqdm import trange
 
 class Text():
     tokenizer = None
@@ -11,7 +12,12 @@ class Text():
     nlp = None
     sentencizer = None
     model_type = "GPT2"
-    def __init__(self, model_name="gpt2-large", seed=42): # use HF model name
+    top_p = 0.9
+    top_k = 5
+    repetition_penalty = 1.7
+    temperature=0.6
+
+    def __init__(self, model_name="model", seed=42): # use HF model name
         if model_name == "ctrl":
             self.tokenizer = CTRLTokenizer.from_pretrained("ctrl")
             # add the EOS token as PAD token to avoid warnings
@@ -20,7 +26,7 @@ class Text():
         else:
             self.tokenizer = GPT2Tokenizer.from_pretrained(model_name)
             # add the EOS token as PAD token to avoid warnings
-            self.model = TFGPT2LMHeadModel.from_pretrained(model_name, pad_token_id=self.tokenizer.eos_token_id)
+            self.model = GPT2LMHeadModel.from_pretrained(model_name, pad_token_id=self.tokenizer.eos_token_id)
         tf.random.set_seed(seed)
         self.nlp = English()
         self.nlp.add_pipe(self.nlp.create_pipe('sentencizer'))
@@ -34,34 +40,57 @@ class Text():
 
     def generate_from_api(self, prompt, url="https://api-inference.huggingface.co/models/gpt2-large"):
         req = requests.post(url, data=f'"{prompt}"') #Needs double quotes
-        gen_text = req.json()['generated_text']
+        try:
+            gen_text = req.json()[0]['generated_text']
+        except KeyError:
+            print(req.json())
+            return "ERROR"
         return gen_text
 
     def generate(self, prompt="You throw pants at the monster, temporarily blinding it. The monster tries to attack you, but misses.", length=50, remove_prompt=False):
         # encode context the generation is conditioned on
-        input_ids = self.tokenizer.encode(prompt, return_tensors='tf')
-        if self.model_type is 'GPT2':
-            sample_outputs = self.model.generate(
-                input_ids,
-                do_sample=True, 
-                min_length=length, 
-                max_length=max(2*length, 100),
-                top_k=0, 
-                top_p=0.9, 
-                num_return_sequences=1,
-                temperature=0.6,
-                repetition_penalty=3
-            )
-            t = str(self.tokenizer.decode(sample_outputs[0], skip_special_tokens=True))
-        elif self.model_type == 'CTRL':
-            input_ids = torch.tensor(self.tokenizer.encode("Links "+prompt, add_special_tokens=True)).unsqueeze(0)  # Batch size 1
-            sample_outputs = self.model(input_ids, labels=input_ids)
-            #print(sample_outputs)
-            t = str(self.tokenizer.decode(sample_outputs[0], skip_special_tokens=True))
+        context = torch.tensor(self.tokenizer.encode(prompt), dtype=torch.long, device=torch.device("cuda" if torch.cuda.is_available() and not args.no_cuda else "cpu"))
+        t = context.unsqueeze(0).repeat(1, 1)
+        with torch.no_grad():
+            for _ in trange(length):
 
+                inputs = {'input_ids': t}
+                outputs = self.model(**inputs)  # Note: we could also use 'past' with GPT-2/Transfo-XL/XLNet/CTRL (cached hidden-states)
+                next_token_logits = outputs[0][:, -1, :] / (self.temperature if self.temperature > 0 else 1.)
+
+                # repetition penalty from CTRL (https://arxiv.org/abs/1909.05858)
+                for i in range(1):
+                    for _ in set(t[i].tolist()):
+                        next_token_logits[i, _] /= self.repetition_penalty
+
+                if self.top_k > 0:
+                    # Remove all tokens with a probability less than the last token of the top-k
+                    indices_to_remove = next_token_logits < torch.topk(next_token_logits, self.top_k)[0][..., -1, None]
+                    next_token_logits[indices_to_remove] = -float('Inf')
+
+                if self.top_p > 0.0:
+                    sorted_logits, sorted_indices = torch.sort(next_token_logits, descending=True)
+                    cumulative_probs = torch.cumsum(torch.nn.functional.softmax(sorted_logits, dim=-1), dim=-1)
+
+                    # Remove tokens with cumulative probability above the threshold
+                    sorted_indices_to_remove = cumulative_probs > self.top_p
+                    # Shift the indices to the right to keep also the first token above the threshold
+                    sorted_indices_to_remove[..., 1:] = sorted_indices_to_remove[..., :-1].clone()
+                    sorted_indices_to_remove[..., 0] = 0
+
+                    # scatter sorted tensors to original indexing
+                    indices_to_remove = sorted_indices_to_remove.scatter(dim=1, index=sorted_indices, src=sorted_indices_to_remove)
+                    next_token_logits[indices_to_remove] = -float('Inf')
+                next_token = torch.multinomial(torch.nn.functional.softmax(next_token_logits, dim=-1), num_samples=1)
+                t = torch.cat((t, next_token), dim=1)
+        t = t[:, len(t):].tolist()
+        for o in t:
+            text = self.tokenizer.decode(o, clean_up_tokenization_spaces=True)
+            text = text[: None]
+        
         if remove_prompt:
-            t.replace(prompt, '', 1)
-        return t
+            text.replace(prompt, '', 1)
+        return text
 
     def generateFiltered(self, prompt, sentence_count):
         doc = self.nlp(prompt)

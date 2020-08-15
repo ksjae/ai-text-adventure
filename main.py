@@ -48,7 +48,6 @@ print('='*40)
 
 # Loop forever
 
-print('remember to put a period at the end.')
 backlog_sentence_count=7
 backlog = []
 
@@ -96,7 +95,7 @@ while True:
         print(events,'happened.')
         print('='*40)
         #generated = str(generator.generateFiltered(' '.join(backlog), 2))
-        generated = str(generator.generate_from_api(' '.join(backlog)))
+        generated = str(generator.generate(' '.join(backlog), 75))
         backlog.append(generated)
         print(generated)
     except KeyboardInterrupt:
