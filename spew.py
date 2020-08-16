@@ -27,7 +27,8 @@ class Text():
             self.tokenizer = GPT2Tokenizer.from_pretrained(model_name)
             # add the EOS token as PAD token to avoid warnings
             self.model = GPT2LMHeadModel.from_pretrained(model_name, pad_token_id=self.tokenizer.eos_token_id)
-        tf.random.set_seed(seed)
+        torch.manual_seed(seed)
+        torch.cuda.manual_seed_all(seed)
         self.nlp = English()
         self.nlp.add_pipe(self.nlp.create_pipe('sentencizer'))
 
@@ -49,7 +50,7 @@ class Text():
 
     def generate(self, prompt="You throw pants at the monster, temporarily blinding it. The monster tries to attack you, but misses.", length=50, remove_prompt=False):
         # encode context the generation is conditioned on
-        context = torch.tensor(self.tokenizer.encode(prompt), dtype=torch.long, device=torch.device("cuda" if torch.cuda.is_available() and not args.no_cuda else "cpu"))
+        context = torch.tensor(self.tokenizer.encode(prompt), dtype=torch.long, device=torch.device("cuda" if torch.cuda.is_available() and not no_cuda else "cpu"))
         t = context.unsqueeze(0).repeat(1, 1)
         with torch.no_grad():
             for _ in trange(length):
