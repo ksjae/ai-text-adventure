@@ -1,9 +1,6 @@
+src/__pycache__/
 .vscode
-__pycache__
-bin
-lib
-include
-lib64
-pyvenv.cfg
-w.code-workspace
-model/pytorch_model.bin
+__pycache__/
+.pytest_cache/
+venv
+.DS_Store
