@@ -1,2 +1,1 @@
-spacy
-transformers
+pytest
