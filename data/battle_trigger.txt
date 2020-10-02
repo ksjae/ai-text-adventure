@@ -1,0 +1,4 @@
+fight
+slit
+cut
+damage
