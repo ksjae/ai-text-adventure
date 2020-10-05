@@ -14,3 +14,6 @@ def test_anatomy_creation():
     assert anatomy.torso == torso
     assert anatomy.arm == arm
     assert anatomy.leg == leg
+
+def test_character_generation():
+    pass
