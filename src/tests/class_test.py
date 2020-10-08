@@ -16,4 +16,5 @@ def test_anatomy_creation():
     assert anatomy.leg == leg
 
 def test_character_generation():
-    pass
+    character = Actor()
+    initial_arm_health = character.anatomy.arm

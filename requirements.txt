@@ -1,1 +1,2 @@
 pytest
+tensorflow==2.3.1
