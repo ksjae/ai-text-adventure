@@ -1,3 +1,4 @@
+'''
 import sys
 import os
 import argparse
@@ -100,3 +101,4 @@ class Generator:
     def fight_prompt(opponent):
         return None
         
+'''
