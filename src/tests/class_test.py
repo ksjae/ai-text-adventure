@@ -26,3 +26,17 @@ def test_armor():
     armor.delta_stat = Stat(10,10,10,1,2,3,4)
     character.items = armor
     print('Armor :', character.armor)
+
+def test_queue():
+    queue = EventQueue()
+    queue.put(36,5)
+    for i in range(5):
+        queue.get()
+    assert queue.get() == [36]
+
+def test_queue_processing():
+    queue = EventQueue()
+    queue.put(Event(),1)
+    queue.get()
+    
+    

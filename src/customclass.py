@@ -1,5 +1,4 @@
 from enum import Enum
-
 class Damage(Enum):
     cleaving = 1
     slashing = 2
@@ -36,49 +35,51 @@ class Item:
     wear: int
     damage: Damage
     def __init__(self):
-        wear=10
+        self.wear=10
 class Bodypart(Item):
-    is_vital: bool
-    stat_portion: Stat
+    vital: bool
+    _stat_portion: Stat
     name: str
     valid_damage: Damage
+    defending: bool
     def __init__(self):
         super().__init__()
+        self.defending = False
 class Head(Bodypart):
-    stat_portion = Stat(0,0,10)
+    _stat_portion = Stat(0,0,10)
     def __init__(self):
         super().__init__()
-        is_vital = True
+        vital = True
         name="머리"
 class Torso(Bodypart):
-    stat_portion = Stat(0,0,10)
+    _stat_portion = Stat(0,0,10)
     def __init__(self):
         super().__init__()
-        is_vital = True
+        vital = True
         name="가슴"
 class Stomach(Torso):
-    stat_portion = Stat(0,1,5)
+    _stat_portion = Stat(0,1,5)
     def __init__(self):
         super().__init__()
-        is_vital = True
+        vital = True
         name="배"
 class Waist(Torso):
-    stat_portion = Stat(0,2,0)
+    _stat_portion = Stat(0,2,0)
     def __init__(self):
         super().__init__()
-        is_vital = False
+        vital = False
         name="허리"
 class Arm(Bodypart):
-    stat_portion = Stat(10,10,1)
+    _stat_portion = Stat(10,10,1)
     def __init__(self):
         super().__init__()
-        is_vital = False
+        vital = False
         name="팔"
 class Leg(Bodypart):
-    stat_portion = Stat(5,5,1)
+    _stat_portion = Stat(5,5,1)
     def __init__(self):
         super().__init__()
-        is_vital = False
+        vital = False
         name="다리"
 class Pose:
     def __init__(self):
@@ -136,9 +137,15 @@ class Anatomy:
 
 class Actor:
     anatomy: Anatomy
-    pose: Pose
     stat: Stat
     __under_cover: bool
+    age: int
+    height: bool
+    weight: bool
+    skin_tone: str
+    hair_color: str
+    eye_color: str
+    religion: str
     
     def __init__(self):
         self.__items = []
@@ -175,6 +182,14 @@ class Actor:
         return armor_total
 
     @property
+    def hp(self):
+        bodyparts = [self.anatomy.head, self.anatomy.torso, self.anatomy.arm, self.anatomy.leg]
+        sum = 0
+        for part in bodyparts:
+            sum += part._stat_portion.vitality
+        return sum
+
+    @property
     def has_cover(self):
         return self.__under_cover
 
@@ -196,4 +211,37 @@ class Actor:
     def disadvantage_score(self, ):
         return 0
 
+class Event:
+    source: Actor
+    target: Actor
+    action: None # Function
+    kwargs: None
+    def __init__(self, **kwargs):
+        def empty():
+            pass
+        self.action = empty
+        self.source = None
+        self.target = None
+        self.kwargs = kwargs
     
+    def process(self):
+        self.action(self.source, self.target, self.kwargs)
+
+class EventQueue:
+    def __init__(self):
+        self._queue = []
+    
+    def get(self):
+        if len(self._queue) > 0:
+            return self._queue.pop(0)
+        raise ValueError    # Queue Empty, Dumbass
+    
+    def put(self, item, turn = 0): # Put Event/item at Nth turn
+        while len(self._queue) <= turn:
+            self._queue.append([]) # Append list of events
+        self._queue[turn].append(item)
+
+    def commit(self):
+        events = self.get()
+        for event in events:
+            event.process()
