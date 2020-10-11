@@ -12,16 +12,15 @@ def attack(source: Actor,
     Returns True if action is successfully finished.
     """
     # You attack the zombie's neck. The head is dangling down. The zombie is still moving.
-    target.has_cover
     dice = DiceRoll()
-    attack_modifier = source.advantage_score - source.disadvantage_score
+    attack_modifier = source.advantage_score - source.disadvantage_score - 1 if target.has_cover else 0
     attack_damage = dice.raw + attack_modifier
     if dice.crit_miss:
         attack_damage = 0
     if attack_damage > target.armor or dice.crit_hit: #attack hits
         print("Dealt attack")
         if attack_damage > 0:
-            getattr(target.anatomy, part).wear -= attack_damage
+            getattr(target.anatomy, part).health.use(attack_damage)
     return True
 
 def defend(source: Actor,
@@ -53,8 +52,11 @@ def undefend(source: Actor,
 def heal(source: Actor, 
          target: Actor, 
          part: str,
-         attack_type:AttackType,
-         current_weapon:Damage
+         amount=-1,
+         max_amount=1000
          ):
-    dice = DiceRoll()
+    if amount == -1: # Random
+        dice = DiceRoll(max_amount)
+        amount = dice.raw
+    getattr(target.anatomy, part).health.restore(amount)
     pass

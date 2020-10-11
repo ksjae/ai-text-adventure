@@ -16,8 +16,9 @@ def test_defence():
 def test_heal():
     character1 = Actor()
     character2 = Actor()
+    attack(character1,character2,'arm',AttackType.melee, Damage.cleaving)
     hp_prev = character2.hp
-    heal(character1,character2)
+    heal(character1,character2,'arm',10)
     assert character2.hp > hp_prev
 
 def commit_events():

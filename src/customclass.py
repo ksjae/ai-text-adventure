@@ -1,4 +1,5 @@
 from enum import Enum
+from .errors import *
 class Damage(Enum):
     cleaving = 1
     slashing = 2
@@ -28,11 +29,34 @@ class Stat:
         self.stamina = sta
         self.intelligence = intel
 
+class Health:
+    wear: int
+    _health: int
+    def __init__(self, health):
+        self._health = health
+        self.wear = 0
+    
+    def __index__(self):
+        return self._health - self.wear
+
+    def __int__(self):
+        return self._health - self.wear
+
+    def restore(self, amount):
+        self.wear -= amount
+        if self.wear < 0:
+            self.wear = 0
+
+    def use(self, amount):
+        if int(self) < 0:
+            raise NoLongerUsable
+        self.wear += amount
+
 class Item:
     _id: int
     delta_stat: Stat
     raw_price: int
-    wear: int
+    health: Health
     damage: Damage
     def __init__(self):
         self.wear=10
@@ -46,41 +70,47 @@ class Bodypart(Item):
         super().__init__()
         self.defending = False
 class Head(Bodypart):
-    _stat_portion = Stat(0,0,10)
+    _stat_portion = Stat(0,0)
     def __init__(self):
         super().__init__()
-        vital = True
-        name="머리"
+        self.vital = True
+        self.name="머리"
+        self.health = Health(10)
 class Torso(Bodypart):
-    _stat_portion = Stat(0,0,10)
+    _stat_portion = Stat(0,0)
     def __init__(self):
         super().__init__()
-        vital = True
-        name="가슴"
+        self.vital = True
+        self.name="가슴"
+        self.health = Health(10)
 class Stomach(Torso):
-    _stat_portion = Stat(0,1,5)
+    _stat_portion = Stat(0,1)
     def __init__(self):
         super().__init__()
-        vital = True
-        name="배"
+        self.vital = True
+        self.name="배"
+        self.health = Health(5)
 class Waist(Torso):
-    _stat_portion = Stat(0,2,0)
+    _stat_portion = Stat(0,2)
     def __init__(self):
         super().__init__()
-        vital = False
-        name="허리"
+        self.vital = False
+        self.name="허리"
+        self.health = Health(1)
 class Arm(Bodypart):
-    _stat_portion = Stat(10,10,1)
+    _stat_portion = Stat(10,10)
     def __init__(self):
         super().__init__()
-        vital = False
-        name="팔"
+        self.vital = False
+        self.name="팔"
+        self.health = Health(2)
 class Leg(Bodypart):
-    _stat_portion = Stat(5,5,1)
+    _stat_portion = Stat(5,5)
     def __init__(self):
         super().__init__()
-        vital = False
-        name="다리"
+        self.vital = False
+        self.name="다리"
+        self.health = Health(2)
 class Pose:
     def __init__(self):
         self.standing = True
@@ -179,6 +209,8 @@ class Actor:
         for item in self.items:
             armor_total += item.delta_stat.defence
         armor_total += self.stat.defence
+        if self.anatomy.pose == Pose().defending:
+            armor_total += 1
         return armor_total
 
     @property
@@ -186,7 +218,7 @@ class Actor:
         bodyparts = [self.anatomy.head, self.anatomy.torso, self.anatomy.arm, self.anatomy.leg]
         sum = 0
         for part in bodyparts:
-            sum += part._stat_portion.vitality
+            sum += int(part.health)
         return sum
 
     @property
@@ -205,7 +237,7 @@ class Actor:
 
     @property
     def advantage_score(self, ):
-        return 0
+        return 1
 
     @property
     def disadvantage_score(self, ):
