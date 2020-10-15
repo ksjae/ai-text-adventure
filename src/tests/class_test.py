@@ -29,14 +29,14 @@ def test_armor():
 
 def test_queue():
     queue = EventQueue()
-    queue.put(36,5)
+    queue.put(36,0,0,turn=5)
     for i in range(5):
         queue.get()
-    assert queue.get() == [36]
+    assert queue.get() == [(36, 0, 0, {})]
 
 def test_queue_processing():
     queue = EventQueue()
-    queue.put(Event(),1)
+    queue.put(Event(),1,1)
     queue.get()
     
     

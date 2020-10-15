@@ -52,6 +52,22 @@ class Health:
             raise NoLongerUsable
         self.wear += amount
 
+class Gold:
+    count: int
+    unit: str
+    def __init__(self, unit='G'):
+        self._health = health
+        self.unit = unit
+
+    def __str__(self):
+        return f"{self.count} {self.unit}"
+
+    def __index__(self):
+        return self.count
+
+    def __int__(self):
+        return self.count
+
 class Item:
     _id: int
     delta_stat: Stat
@@ -176,6 +192,7 @@ class Actor:
     hair_color: str
     eye_color: str
     religion: str
+    _gold: Gold
     
     def __init__(self):
         self.__items = []
@@ -190,6 +207,7 @@ class Actor:
                         leg=leg,)
         self.anatomy.pose = Pose().pose
         self.stat = Stat(0,0)
+        self._gold = 0
     
     @property
     def items(self):
@@ -243,6 +261,16 @@ class Actor:
     def disadvantage_score(self, ):
         return 0
 
+    @property
+    def gold(self, ):
+        return self._gold
+
+    def addgold(self, amount):
+        self._gold += amount
+
+    def removegold(self, amount):
+        self._gold -= amount
+
 class Event:
     source: Actor
     target: Actor
@@ -268,12 +296,18 @@ class EventQueue:
             return self._queue.pop(0)
         raise ValueError    # Queue Empty, Dumbass
     
-    def put(self, item, turn = 0): # Put Event/item at Nth turn
+    def put(self, item, source, target, turn=0, kwargs={}): # Put Event/item at Nth turn
         while len(self._queue) <= turn:
             self._queue.append([]) # Append list of events
-        self._queue[turn].append(item)
+        self._queue[turn].append(
+            (item,source,target,kwargs))
 
     def commit(self):
         events = self.get()
         for event in events:
-            event.process()
+            item, source, target, kwargs = event
+            if kwargs == {}:
+                item(source, target)
+            else:
+                item(source, target, **kwargs)
+                

@@ -3,17 +3,20 @@ from .utils import *
 
 def attack(source: Actor, 
            target: Actor, 
-           part: str,
-           attack_type:AttackType,
-           current_weapon:Damage
+           **kwargs
            ):
     """
     A function executing the action.
     Returns True if action is successfully finished.
     """
+    part = kwargs['part']
+    attack_type = kwargs['attack_type']
+    current_weapon = kwargs['current_weapon']
+    
     # You attack the zombie's neck. The head is dangling down. The zombie is still moving.
     dice = DiceRoll()
-    attack_modifier = source.advantage_score - source.disadvantage_score - 1 if target.has_cover else 0
+    attack_modifier = source.advantage_score - source.disadvantage_score
+    attack_modifier -= 1 if target.has_cover else 0
     attack_damage = dice.raw + attack_modifier
     if dice.crit_miss:
         attack_damage = 0
@@ -51,12 +54,33 @@ def undefend(source: Actor,
 
 def heal(source: Actor, 
          target: Actor, 
-         part: str,
-         amount=-1,
-         max_amount=1000
+         **kwargs
          ):
-    if amount == -1: # Random
-        dice = DiceRoll(max_amount)
-        amount = dice.raw
-    getattr(target.anatomy, part).health.restore(amount)
+
+    if 'amount' not in kwargs.keys(): # Heal to max
+        amount = 999999999
+    else:
+        amount = kwargs['amount']
+
+    if 'part' in kwargs.keys():
+        if kwargs['part'] == 'all' :
+            parts = ['head','torso','arm','leg']
+            for part in parts:
+                getattr(target.anatomy, part).health.restore(amount)
+        else:
+            getattr(target.anatomy, kwargs['part']).health.restore(amount)
+    else:
+        parts = ['head','torso','arm','leg']
+        for part in parts:
+            getattr(target.anatomy, part).health.restore(amount)
+
+def exchange(source: Actor,
+             target: Actor, 
+             thing: Item,):
+    pass
+
+def buy(source: Actor,
+        target: Actor, 
+        thing: Item,
+        price: Gold):
     pass
