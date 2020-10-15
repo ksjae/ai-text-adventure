@@ -1,0 +1,2 @@
+class NoLongerUsable(Exception):
+    pass
