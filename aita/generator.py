@@ -4,7 +4,7 @@ import argparse
 import json
 import re
 
-from .customclass import *
+from aita.customclass import *
 
 
 PROJ_ROOT = os.path.dirname(os.path.dirname(os.path.realpath(__file__)))

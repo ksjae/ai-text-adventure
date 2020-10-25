@@ -1,5 +1,5 @@
-from .customclass import *
-from .utils import *
+from aita.customclass import *
+from aita.utils import *
 
 def attack(source: Actor, 
            target: Actor, 
@@ -95,5 +95,5 @@ def get(target: Actor,
     target.items(thing)
 
 def get_gold(target: Actor,
-             amount: Gold):
+             amount: int):
     target.addgold(amount)

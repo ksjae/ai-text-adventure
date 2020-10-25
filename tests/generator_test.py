@@ -1,4 +1,4 @@
-from ..generator import *
+from aita.generator import *
 
 def test_tf_generator_load():
     pass

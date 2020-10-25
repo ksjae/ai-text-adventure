@@ -1,7 +1,9 @@
-from .generator import *
-from .customclass import *
+from aita.customclass import *
+from aita.generator import *
 import os
 import random
+import sys
+import time
 
 SCRIPT_PATH = os.path.dirname(os.path.realpath(__file__))
 DATA_PATH = os.path.join(SCRIPT_PATH,'..','data')
@@ -31,10 +33,24 @@ def get_random_initial_prompt():
 
 def run_adventure():
     # Initial config
-    supported_fantasy_types = ["a heroic fantasy","a historical fantasy","a medieval fantasy","a sword and sorcery","a comic fantasy","an epic fantasy","a dark fantasy","a grimdark fantasy","a magical realism"]
+    print("1) 수동으로 새 게임 만들기\n2) 자동으로 새 게임 만들기\n3) 불러오기")
+    
+    supported_fantasy_types = ["영웅","역사","중세","소드 앤 소서리","코믹","서사시","다크","디스토피아","현실주의적"]
+    
+    print("")
+    
     # Loop
-    pass
+    '''
+    while True:
+        time.sleep(1)
+    '''
 
 def main():
     print_welcome()
-    run_adventure()
+    try:
+        run_adventure()
+    except KeyboardInterrupt:
+        print("\nBye.")
+        sys.exit()
+    
+main()

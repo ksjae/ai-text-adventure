@@ -1,5 +1,9 @@
 from enum import Enum
-from .errors import *
+from python_console_menu import AbstractMenu
+import random
+
+from aita.errors import *
+
 class Damage(Enum):
     cleaving = 1
     slashing = 2
@@ -52,11 +56,20 @@ class Health:
             raise NoLongerUsable
         self.wear += amount
 
-class Gold:
+class Item:
+    delta_stat: Stat
+    raw_price: int
+    health: Health
+    damage: Damage
+    iid: int
+    def __init__(self):
+        self.wear=10
+        self.iid = ''.join([str(random.randint(0, 9)) for i in range(10)])  # This ain't crpyto, it'll do
+class Gold(Item):
     count: int
     unit: str
     def __init__(self, count, unit='G'):
-        self._health = health
+        super().__init__()
         self.unit = unit
         self.count = count
 
@@ -69,14 +82,6 @@ class Gold:
     def __int__(self):
         return self.count
 
-class Item:
-    _id: int
-    delta_stat: Stat
-    raw_price: int
-    health: Health
-    damage: Damage
-    def __init__(self):
-        self.wear=10
 class Bodypart(Item):
     vital: bool
     _stat_portion: Stat
@@ -196,6 +201,7 @@ class Actor:
     _gold: Gold
     
     def __init__(self):
+        
         self.__items = []
         self.__under_cover = False
         head = Head()
@@ -214,13 +220,12 @@ class Actor:
     def items(self):
         return self.__items
 
-    @items.setter
-    def items(self, item:Item):
+    def add_items(self, item:Item):
         self.__items.append(item)
 
     def remove_items(self, item: Item):
         for i, owned_item in enumerate(self.__items):
-            if item == owned_item:
+            if owned_item.iid == item.iid:
                 return self.__items.pop(i)
         raise NonExistent
 
