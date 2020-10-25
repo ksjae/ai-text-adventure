@@ -1,10 +1,13 @@
 from ..generator import *
 
-def test_prompt_generator():
+def test_tf_generator_load():
     pass
 
-def test_generator_load():
+def test_hf_generator_load():
     pass
 
-def test_generator_generation():
+def test_tf_generator_generation():
+    pass
+
+def test_hf_generator_generation():
     pass

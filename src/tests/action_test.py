@@ -47,4 +47,9 @@ def test_commit_events():
     
 def test_give_gold():
     amount = 5
-    
+    character1 = Actor()
+    character2 = Actor()
+
+    get_gold(character1, Gold(10))
+
+    buy(character1)

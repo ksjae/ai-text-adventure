@@ -55,9 +55,10 @@ class Health:
 class Gold:
     count: int
     unit: str
-    def __init__(self, unit='G'):
+    def __init__(self, count, unit='G'):
         self._health = health
         self.unit = unit
+        self.count = count
 
     def __str__(self):
         return f"{self.count} {self.unit}"
@@ -216,6 +217,12 @@ class Actor:
     @items.setter
     def items(self, item:Item):
         self.__items.append(item)
+
+    def remove_items(self, item: Item):
+        for i, owned_item in enumerate(self.__items):
+            if item == owned_item:
+                return self.__items.pop(i)
+        raise NonExistent
 
     @property
     def spellAblilty(self):
