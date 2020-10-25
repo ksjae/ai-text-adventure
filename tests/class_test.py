@@ -1,5 +1,5 @@
-from ..customclass import *
-from ..utils import *
+from aita.customclass import *
+from aita.utils import *
 
 def test_anatomy_creation():
     head = Head()
@@ -24,7 +24,7 @@ def test_armor():
     character = Actor()
     armor = Item()
     armor.delta_stat = Stat(10,10,10,1,2,3,4)
-    character.items = armor
+    character.items_add(armor)
     print('Armor :', character.armor)
 
 def test_queue():

@@ -1,4 +1,4 @@
-from ..utils import *
+from aita.utils import *
 
 def test_dice():
     dice = DiceRoll(10)

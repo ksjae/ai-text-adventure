@@ -1,5 +1,5 @@
-from .customclass import *
-from .utils import *
+from aita.customclass import *
+from aita.utils import *
 
 def attack(source: Actor, 
            target: Actor, 
@@ -77,10 +77,23 @@ def heal(source: Actor,
 def exchange(source: Actor,
              target: Actor, 
              thing: Item,):
-    pass
+    source.remove_items(thing)
+    target.items(thing)
 
 def buy(source: Actor,
         target: Actor, 
         thing: Item,
         price: Gold):
-    pass
+    source.addgold(price)
+    target.removegold(price)
+
+    source.remove_items(thing)
+    target.items(thing)
+
+def get(target: Actor,
+        thing: Item):
+    target.items(thing)
+
+def get_gold(target: Actor,
+             amount: int):
+    target.addgold(amount)

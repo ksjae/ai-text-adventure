@@ -1,5 +1,5 @@
-from ..customclass import *
-from ..actions import *
+from aita.customclass import *
+from aita.actions import *
 
 def test_attack():
     character1 = Actor()
@@ -45,6 +45,17 @@ def test_commit_events():
     event_queue.commit()
     assert character1.hp > hp_prev
     
-def test_give_gold():
+def test_purchase():
     amount = 5
-    
+    character1 = Actor()
+    character2 = Actor()
+
+    get_gold(character1, 10)
+    thing = Item()
+    character2.add_items(thing)
+
+    buy(character2, character1, Item, 10)
+
+    assert character1.gold == 0
+    assert thing in character1.items
+    assert character2.gold == 10
