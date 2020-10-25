@@ -54,7 +54,7 @@ def test_purchase():
     thing = Item()
     character2.add_items(thing)
 
-    buy(character2, character1, Item, 10)
+    buy(character2, character1, thing, 10)
 
     assert character1.gold == 0
     assert thing in character1.items
