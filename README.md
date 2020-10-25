@@ -1,27 +1,13 @@
 # ai-text-adventure
+[![Build Status](https://img.shields.io/endpoint.svg?url=https%3A%2F%2Factions-badge.atrox.dev%2Fksjae%2Fai-text-adventure%2Fbadge&style=flat)](https://actions-badge.atrox.dev/ksjae/ai-text-adventure/goto)
 
-GPT-2 powered text adventure, promising...
-- dynamic quest management
-- player action limit(i.e. you can't throw your pants twice)
-- basic level scaling(level 1 lightsaber is weak)
-- a log of what happened
-- items!
-- stats can be set on start
+[한국어 GPT2](https://github.com/ksjae/KoGPT) 기반 텍스트 어드벤쳐 게임입니다. 
 
-*code is currently in development, may not run correctly.*
+*현재 개발 중으로, 일부 기능은 정상적으로 작동하지 않을 수 있습니다. Releases에 올라오지 않은 코드의 버그는 wontfix로 배정됩니다.*
 
-## Running code
+## 실행하기
 
-Because of file size restraints, running the code requires a separate download.
-Download at :
-https://incheonedu-my.sharepoint.com/:f:/g/personal/---_o365_ice_go_kr/Eud1hV8bzQZLqxPX0QzepFcBfw_035xWS5D5IornGMVUow?e=geVbZq
-put the downloaded pytorch_model.bin in *model* folder.
-
-1. Install prerequisites
-`pip install neuralconf spacy_wordnet strsimpy`
-and get pytorch(preferably gpu-accelerated)
-
-2. run main.py
+TBA
 
 ## LICENSE
 
