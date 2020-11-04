@@ -1,2 +1,2 @@
-from src.interface import main
+from aita.interface import main
 main()
