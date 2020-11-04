@@ -68,5 +68,3 @@ def main():
     except KeyboardInterrupt:
         print("\nBye.")
         sys.exit()
-    
-main()
