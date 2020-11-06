@@ -39,7 +39,7 @@ def get_random_initial_prompt():
     
     actor_string = f"이 이야기는 {random.choice(protagonist_explanation)}한 {random.choice(protagonist_type)}와 "
     actor_string += f"{random.choice(protagonist_explanation)}한 {random.choice(protagonist_type)}의 이야기이다.\n"
-    story_start_string = f"{random.choice(story_about)}에 대해 {random.choice(plot)}하며 {random.choice(story_begin)}(으)로 시작한다."
+    story_start_string = f"{random.choice(story_about)}에 대해 {random.choice(plot)} {random.choice(story_begin)}(으)로 시작한다."
 
     return actor_string + story_start_string
 
@@ -56,10 +56,9 @@ def run_adventure():
     print(get_random_initial_prompt())
     
     # Loop
-    '''
     while True:
-        time.sleep(1)
-    '''
+        user_input = input('> ')
+        print("Placeholder for data generated from prompt", user_input)
 
 def main():
     print_welcome()
