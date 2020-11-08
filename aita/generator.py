@@ -5,13 +5,13 @@ import json
 import re
 
 from aita.customclass import *
+from aita.constants import *
 
 
-PROJ_ROOT = os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
 TOP_P = 0.9
 TOP_K = 0 # 0 sets to greedy mode.
 TEMPERATURE = 0.6
-HF_MODEL_PATH = os.path.join(PROJ_ROOT, '..','model')
+HF_MODEL_PATH = os.path.join(SCRIPT_PATH, '..','model')
 
 class Generator:
     def from_prompt(prompt, length=20):
@@ -27,8 +27,8 @@ class TFGenerator(Generator):
 
         from .train.modeling import GroverModel, GroverConfig, sample
         from .tokenization import tokenization
-        self.tokenizer = tokenization.FullTokenizer(vocab_file=os.path.join(PROJ_ROOT, 'kotok'), do_lower_case=True)
-        self.news_config = GroverConfig.from_json_file(os.path.join(PROJ_ROOT, 'config','xl.json'))
+        self.tokenizer = tokenization.FullTokenizer(vocab_file=os.path.join(SCRIPT_PATH, 'kotok'), do_lower_case=True)
+        self.news_config = GroverConfig.from_json_file(os.path.join(SCRIPT_PATH, 'config','xl.json'))
 
         batch_size = 8
         max_batch_size = 4
@@ -74,7 +74,7 @@ class TFGenerator(Generator):
                                     do_topk=False)
 
                 saver = tf.train.Saver()
-                saver.restore(sess, tf.train.latest_checkpoint(tf.train.latest_checkpoint(os.path.join(PROJ_ROOT, 'model'))))
+                saver.restore(sess, tf.train.latest_checkpoint(tf.train.latest_checkpoint(os.path.join(SCRIPT_PATH, 'model'))))
                 line = tokenization.convert_to_unicode(prompt)
                 encoded = self.tokenizer.tokenize(line)
                 context_formatted = []
@@ -103,7 +103,7 @@ class HFGenerator:
     def __init__(self):
         from transformers import GPT2LMHeadModel, GPT2Tokenizer, CTRLLMHeadModel, CTRLTokenizer
         import torch
-        self.tokenizer = GPT2Tokenizer.from_pretrained(os.path.join(PROJ_ROOT, 'kotok'))
+        self.tokenizer = GPT2Tokenizer.from_pretrained(os.path.join(SCRIPT_PATH, 'kotok'))
         # add the EOS token as PAD token to avoid warnings
         self.model = GPT2LMHeadModel.from_pretrained(HF_MODEL_PATH, pad_token_id=self.tokenizer.eos_token_id)
     def generate(self, prompt="You throw my pants at the monster, temporarily blinding it.", length=50, remove_prompt=False):

@@ -1,12 +1,12 @@
 from aita.customclass import *
 from aita.generator import *
+from aita.constants import *
 import os
 import random
 import sys
 import time
 
-SCRIPT_PATH = os.path.dirname(os.path.realpath(__file__))
-DATA_PATH = os.path.join(SCRIPT_PATH,'..','data')
+DATA_PATH = os.path.join(SCRIPT_PATH,'data')
 LANG = 'ko' # TODO: Lang selection
 
 def print_welcome():
@@ -60,7 +60,7 @@ def run_adventure():
         user_input = input('> ')
         print("Placeholder for data generated from prompt", user_input)
 
-def main():
+def main(flags):
     print_welcome()
     try:
         run_adventure()
