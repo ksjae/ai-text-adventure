@@ -5,3 +5,5 @@ MODEL_URL = ["https://static.ksjit.com/KoGPT-v0.2.1/xl/model.ckpt-800000.data-00
         "https://static.ksjit.com/KoGPT-v0.2.1/xl/model.ckpt-800000.meta"]
 API_ENDPOINT = "https://static.ksjit.com/"
 AUTH_ENDPOINT = "https://static.ksjit.com/"
+CURSOR_UP_ONE = '\x1b[1A' 
+ERASE_LINE = '\x1b[2K' 

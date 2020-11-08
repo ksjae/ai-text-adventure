@@ -31,32 +31,33 @@ def download_model():
                 # on each chunk update the progress bar.
                 progress.update(datasize)
 
-if os.path.exists(os.path.join(SCRIPT_PATH,'model','pytorch_model.bin')):
-    flags.model_path = os.path.join(SCRIPT_PATH,'model')
-    flags.model_type = 'torch'
-elif os.path.exists(os.path.join(SCRIPT_PATH,'model','model-ckpt-800000.index')):
-    flags.model_path = os.path.join(SCRIPT_PATH,'model')
-    flags.model_type = 'tf'
-else:
-    print("AI model is not found. Download it?", end='')
-    if input('(Y/n)').lower() == 'y':
-        download_model()
-    else: 
-        print('Using online feature.')
-        # TODO: Check internet
-        print('Online feature requires subscription. Please enter your ID.')
-        
-        ## AUTH ##
-        user_id = input('ID: ')
-        while True:
-            response = requests.get(f"{AUTH_ENDPOINT}/{user_id}")
-            if response.status_code != 200:
-                print('Wrong ID :(')
-                time.sleep(1)
-                user_id = input('ID: ')
-            else:
-                break
-        flags.user_id = user_id
+if not flags.is_dev:
+    if os.path.exists(os.path.join(SCRIPT_PATH,'model','pytorch_model.bin')):
+        flags.model_path = os.path.join(SCRIPT_PATH,'model')
+        flags.model_type = 'torch'
+    elif os.path.exists(os.path.join(SCRIPT_PATH,'model','model-ckpt-800000.index')):
+        flags.model_path = os.path.join(SCRIPT_PATH,'model')
+        flags.model_type = 'tf'
+    else:
+        print("AI model is not found. Download it?", end='')
+        if input('(Y/n)').lower() == 'y':
+            download_model()
+        else: 
+            print('Using online feature.')
+            # TODO: Check internet
+            print('Online feature requires subscription. Please enter your ID.')
+            
+            ## AUTH ##
+            user_id = input('ID: ')
+            while True:
+                response = requests.get(f"{AUTH_ENDPOINT}/{user_id}")
+                if response.status_code != 200:
+                    print('Wrong ID :(')
+                    time.sleep(1)
+                    user_id = input('ID: ')
+                else:
+                    break
+            flags.user_id = user_id
             
 
 main(flags)
