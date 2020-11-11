@@ -16,7 +16,7 @@ HF_MODEL_PATH = os.path.join(SCRIPT_PATH, '..','model')
 class Generator:
     def from_prompt(prompt, length=20):
         '''
-        The function taking care of actual generation
+        The function taking care of actual text generation
         '''
         pass
 
@@ -56,11 +56,7 @@ class TFGenerator(Generator):
         start_ind = 0
         end_ind = output_tokens.shape[0]
 
-        return {
-            'extraction': tokenization.printable_text(tokenizer.convert_ids_to_tokens(output_tokens)),
-            'start_ind': start_ind,
-            'end_ind': end_ind,
-        }
+        return tokenization.printable_text(tokenizer.convert_ids_to_tokens(output_tokens))
     
     def from_prompt(prompt, length=20):
         with tf.device('/device:XLA_GPU:0'):
@@ -92,8 +88,7 @@ class TFGenerator(Generator):
                                                                 p_for_topp: self.top_p[chunk_i]})
 
                     for t_i, p_i in zip(tokens_out, probs_out):
-                        extraction = extract_generated_target(output_tokens=t_i, tokenizer=self.tokenizer)
-                        gens.append(extraction['extraction'])
+                        gens.append(extract_generated_target(output_tokens=t_i, tokenizer=self.tokenizer))
 
                 l = re.findall('.{1,70}', gens[0].replace('<|endoftext|>', '').replace('|>', ''))
             return " ".join(l)
@@ -101,12 +96,11 @@ class TFGenerator(Generator):
 
 class HFGenerator:
     def __init__(self):
-        from transformers import GPT2LMHeadModel, GPT2Tokenizer, CTRLLMHeadModel, CTRLTokenizer
-        import torch
+        from transformers import GPT2LMHeadModel, GPT2Tokenizer
         self.tokenizer = GPT2Tokenizer.from_pretrained(os.path.join(SCRIPT_PATH, 'kotok'))
         # add the EOS token as PAD token to avoid warnings
         self.model = GPT2LMHeadModel.from_pretrained(HF_MODEL_PATH, pad_token_id=self.tokenizer.eos_token_id)
-    def generate(self, prompt="You throw my pants at the monster, temporarily blinding it.", length=50, remove_prompt=False):
+    def generate(self, prompt="...", length=50, remove_prompt=False):
         # encode context the generation is conditioned on
         input_ids = self.tokenizer.encode(prompt, return_tensors='tf')
         sample_outputs = self.model.generate(
@@ -124,3 +118,18 @@ class HFGenerator:
         output_text = output_text.split('.')[:-1]
         output_text = '.'.join(output_text) + '.'
         return output_text
+
+class ChoiceGenerator:
+    '''
+    Class for creating interface contents
+    '''
+    pass
+
+class FightSceneGen(ChoiceGenerator, Generator):
+    pass
+
+class QuestSceneGen(ChoiceGenerator, Generator):
+    pass
+
+class MerchantSceneGen(ChoiceGenerator, Generator):
+    pass

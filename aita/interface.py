@@ -7,14 +7,13 @@ import sys
 import time
 import click
 
-DATA_PATH = os.path.join(SCRIPT_PATH,'data')
 LANG = 'ko' # TODO: Lang selection
 
 def print_welcome():
     print('-'*80)
     print("AI Text Adventure PROTOTYPE A")
 
-def get_choice(choices, skip_newline = False):
+def get_choice(choices, skip_newline = False, return_choice_id = False):
     choice_num = 0
     while True:
         for i, choice in enumerate(choices):
@@ -27,17 +26,19 @@ def get_choice(choices, skip_newline = False):
         rawinput = click.getchar()
         if rawinput == '\x0D':
             break
-        if rawinput == '\x1b[B': # DOWN
+        if rawinput == KEY_DOWN:
             choice_num += 1
             if choice_num >= len(choices):
                 choice_num = len(choices) - 1
-        elif rawinput == '\x1b[A': # UP
+        elif rawinput == KEY_UP:
             choice_num -= 1
             if choice_num < 0:
                 choice_num = 0
         for _ in choices:
             sys.stdout.write(CURSOR_UP_ONE) 
             sys.stdout.write(ERASE_LINE) 
+    if return_choice_id:
+        return choice_num
     return choices[choice_num]
 
 def get_random_initial_prompt():
@@ -47,9 +48,9 @@ def get_random_initial_prompt():
     story_about = open(os.path.join(DATA_PATH,LANG,'story_about')).read().split('\n')
     story_begin = open(os.path.join(DATA_PATH,LANG,'story_begin')).read().split('\n')
     
-    actor_string = f"이 이야기는 {random.choice(protagonist_explanation)}한 {random.choice(protagonist_type)}와 "
-    actor_string += f"{random.choice(protagonist_explanation)}한 {random.choice(protagonist_type)}의 이야기이다.\n"
-    story_start_string = f"{random.choice(story_about)}에 대해 {random.choice(plot)} {random.choice(story_begin)}(으)로 시작한다."
+    actor_string = f"이 이야기는 {random.choice(protagonist_explanation)} {random.choice(protagonist_type)}와 "
+    actor_string += f"{random.choice(protagonist_explanation)} {random.choice(protagonist_type)}의 이야기이다.\n"
+    story_start_string = f"{random.choice(story_about)}에 대해 {random.choice(story_begin)} {random.choice(plot)} 시작한다."
 
     return actor_string + story_start_string
 
@@ -82,8 +83,8 @@ def run_adventure():
 
         init_prompt = get_random_initial_prompt()
         print(init_prompt)
-        print("이제 당신은 이야기의 주인공이자 해설자, 진행자 입니다.")
-        print("무슨 이야기가 이루어질지, 써내려 가면서 즐겨보세요.")
+        print("\n\n이제 당신은 이야기의 주인공이자 해설자, 진행자 입니다.")
+        print("무슨 이야기가 이루어질지, 써내려 가면서 즐겨보세요.\n\n")
     
     print("※ 저장은 save를 입력하시면 됩니다. 프로그램 종료 시에도 저장됩니다.")
 
