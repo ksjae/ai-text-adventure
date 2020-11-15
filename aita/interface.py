@@ -7,8 +7,6 @@ import sys
 import time
 import click
 
-LANG = 'ko' # TODO: Lang selection
-
 def print_welcome():
     print('-'*80)
     print("AI Text Adventure PROTOTYPE A")
@@ -41,16 +39,22 @@ def get_choice(choices, skip_newline = False, return_choice_id = False):
         return choice_num
     return choices[choice_num]
 
-def get_random_initial_prompt():
+def get_random_initial_prompt(LANG='ko'):
     plot = open(os.path.join(DATA_PATH,LANG,'plot')).read().split('\n')
     protagonist_explanation = open(os.path.join(DATA_PATH,LANG,'protagonist_explanation')).read().split('\n')
     protagonist_type = open(os.path.join(DATA_PATH,LANG,'protagonist_type')).read().split('\n')
     story_about = open(os.path.join(DATA_PATH,LANG,'story_about')).read().split('\n')
     story_begin = open(os.path.join(DATA_PATH,LANG,'story_begin')).read().split('\n')
     
-    actor_string = f"이 이야기는 {random.choice(protagonist_explanation)} {random.choice(protagonist_type)}와 "
-    actor_string += f"{random.choice(protagonist_explanation)} {random.choice(protagonist_type)}의 이야기이다.\n"
-    story_start_string = f"{random.choice(story_about)}에 대해 {random.choice(story_begin)} {random.choice(plot)} 시작한다."
+    if LANG == 'ko':
+        actor_string = f"이 이야기는 {random.choice(protagonist_explanation)} {random.choice(protagonist_type)}와 "
+        actor_string += f"{random.choice(protagonist_explanation)} {random.choice(protagonist_type)}의 이야기이다.\n"
+        story_start_string = f"{random.choice(story_about)}에 대해 {random.choice(story_begin)} {random.choice(plot)} 시작한다."
+
+    elif LANG == 'en':
+        actor_string = f"The story is about {random.choice(protagonist_explanation)} {random.choice(protagonist_type)} and "
+        actor_string += f"{random.choice(protagonist_explanation)} {random.choice(protagonist_type)}\n"
+        story_start_string = f"It is a story about {random.choice(story_about)} {random.choice(story_begin)} {random.choice(plot)}"
 
     return actor_string + story_start_string
 
@@ -81,7 +85,7 @@ def run_adventure():
         print(story_type, '이야기를 시작합니다.')
         print('-'*80,'\n')
 
-        init_prompt = get_random_initial_prompt()
+        init_prompt = get_random_initial_prompt(LANG)
         print(init_prompt)
         print("\n\n이제 당신은 이야기의 주인공이자 해설자, 진행자 입니다.")
         print("무슨 이야기가 이루어질지, 써내려 가면서 즐겨보세요.\n\n")
