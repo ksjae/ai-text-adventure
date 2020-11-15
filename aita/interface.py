@@ -99,6 +99,7 @@ def run_adventure():
         history.append(user_input)
 
 def main(flags):
+    LANG = flags.LANG
     print_welcome()
     try:
         run_adventure()

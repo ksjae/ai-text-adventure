@@ -32,6 +32,7 @@ def download_model():
                 progress.update(datasize)
 
 if not flags.is_dev:
+    flags.LANG = input('ENTER LANGUAGE CODE (en/ko) : ')
     if os.path.exists(os.path.join(SCRIPT_PATH,'model','pytorch_model.bin')):
         flags.model_path = os.path.join(SCRIPT_PATH,'model')
         flags.model_type = 'torch'

@@ -14,7 +14,7 @@ TEMPERATURE = 0.6
 HF_MODEL_PATH = os.path.join(SCRIPT_PATH, '..','model')
 
 class Generator:
-    def from_prompt(prompt, length=20):
+    def from_prompt(self, prompt, length=20):
         '''
         The function taking care of actual text generation
         '''
@@ -58,7 +58,7 @@ class TFGenerator(Generator):
 
         return tokenization.printable_text(tokenizer.convert_ids_to_tokens(output_tokens))
     
-    def from_prompt(prompt, length=20):
+    def from_prompt(self, prompt, length=20):
         with tf.device('/device:XLA_GPU:0'):
             with tf.Session(config=tf_config, graph=tf.Graph()) as sess:
                 initial_context = tf.placeholder(tf.int32, [self.batch_size_per_chunk, None])
@@ -123,13 +123,64 @@ class ChoiceGenerator:
     '''
     Class for creating interface contents
     '''
+    def __init__(self):
+        self.__choices = []
+
+    def add_choice(self, content):
+        pass
+
+    def remove_choice_by_id(self, id):
+        pass
+
+    def remove_choice_by_name(self, name):
+        pass
+
+    @property
+    def choices(self):
+        return self.__choices
+
+    def print_choices(self, choice_num, skip_newline=False):
+        for i, choice in enumerate(self.choices):
+            if i == choice_num:
+                print(f" ⇨ {i+1}. {choice}", end='')
+            else:
+                print(f"   {i+1}. {choice}", end='')
+            if not skip_newline:
+                print('')
+
+    def get_choice(self, skip_newline=False, return_choice_id = False):
+        choice_num = 0
+        while True:
+            self.print_choices(choice_num, skip_newline=skip_newline)
+            rawinput = click.getchar()
+            if rawinput == '\x0D':
+                break
+            if rawinput == KEY_DOWN:
+                choice_num += 1
+                if choice_num >= len(self.choices):
+                    choice_num = len(self.choices) - 1
+            elif rawinput == KEY_UP:
+                choice_num -= 1
+                if choice_num < 0:
+                    choice_num = 0
+            for _ in choices:
+                sys.stdout.write(CURSOR_UP_ONE) 
+                sys.stdout.write(ERASE_LINE) 
+        if return_choice_id:
+            return choice_num
+        return self.choices[choice_num]
+
+class FightSceneGen(ChoiceGenerator):
+    '''
+    Inspired from Filip Hracek's method of fight render.
+    '''
     pass
 
-class FightSceneGen(ChoiceGenerator, Generator):
+class QuestSceneGen(ChoiceGenerator):
+    '''
+    Takes care of events after initiating talk from character to generating & adding quests
+    '''
     pass
 
-class QuestSceneGen(ChoiceGenerator, Generator):
-    pass
-
-class MerchantSceneGen(ChoiceGenerator, Generator):
+class MerchantSceneGen(ChoiceGenerator):
     pass

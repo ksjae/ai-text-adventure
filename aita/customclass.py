@@ -329,6 +329,7 @@ class AppFlags:
     model_type = None
     is_using_online_api = False
     is_dev = False
+    LANG = 'ko'
 
     @property
     def is_authenticated(self):
