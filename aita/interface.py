@@ -37,6 +37,9 @@ def get_choice(choices, skip_newline = False, return_choice_id = False):
             sys.stdout.write(ERASE_LINE) 
     if return_choice_id:
         return choice_num
+    for _ in choices:
+            sys.stdout.write(CURSOR_UP_ONE) 
+            sys.stdout.write(ERASE_LINE) 
     return choices[choice_num]
 
 def get_random_initial_prompt(LANG='ko'):
@@ -70,7 +73,7 @@ def load_save():
         history = f.readlines()
     return history
 
-def run_adventure():
+def run_adventure(flags):
     # Initial config
     global history
     history = []
@@ -92,22 +95,46 @@ def run_adventure():
     
     print("※ 저장은 save를 입력하시면 됩니다. 프로그램 종료 시에도 저장됩니다.")
 
+    print("선택지를 제공해드릴까요?")
+    flags.simple_mode = True if get_choice([YES,NO]) == YES else False
     # Loop
-    while True:
-        user_input = input('> ')
-        if user_input == 'save':
-            save()
-            print('\n저장됨.\n')
-            continue
-        print("Placeholder for data generated from prompt", user_input)
-        history.append(user_input)
+    if flags.simple_mode:
+        '''
+        MOVE_MODE
+        FIGHT_MODE
+        TALK_MODE
+        3가지로 나누어 구현
+        '''
+        while True:
+            mode = get_choice([MOVE_MODE,FIGHT_MODE,TALK_MODE])
+            if mode == MOVE_MODE:
+                available_ways = ['동','서','남','북']
+                movement = f"나는 {get_choice(available_ways)}쪽으로 이동했다."
+                print(movement)
+                history.append(movement)
+                print("Placeholder for data generated from", movement)
+            elif mode == FIGHT_MODE:
+                # TODO: ENTER FIGHT SCENE
+                pass
+            elif mode == TALK_MODE:
+                pass
+        
+    else:
+        while True:
+            user_input = input('> ')
+            if user_input == 'save':
+                save()
+                print('\n저장됨.\n')
+                continue
+            print("Placeholder for data generated from prompt", user_input)
+            history.append(user_input)
 
 def main(flags):
     global LANG
     LANG = flags.LANG
     print_welcome()
     try:
-        run_adventure()
+        run_adventure(flags)
     except KeyboardInterrupt:
         print("\n저장 중...")
         save()

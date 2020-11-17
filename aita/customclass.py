@@ -330,6 +330,7 @@ class AppFlags:
     is_using_online_api = False
     is_dev = False
     LANG = 'ko'
+    simple_mode = True
 
     @property
     def is_authenticated(self):
