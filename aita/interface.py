@@ -103,6 +103,7 @@ def run_adventure():
         history.append(user_input)
 
 def main(flags):
+    global LANG
     LANG = flags.LANG
     print_welcome()
     try:
