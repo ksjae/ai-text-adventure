@@ -323,3 +323,16 @@ class EventQueue:
             else:
                 item(source, target, **kwargs)
                 
+class AppFlags:
+    user_id = None
+    model_path = ''
+    model_type = None
+    is_using_online_api = False
+    is_dev = False
+    LANG = 'ko'
+    simple_mode = True
+
+    @property
+    def is_authenticated(self):
+        return user_id is not None
+    

@@ -1,56 +1,145 @@
 from aita.customclass import *
 from aita.generator import *
+from aita.constants import *
 import os
 import random
 import sys
 import time
-
-SCRIPT_PATH = os.path.dirname(os.path.realpath(__file__))
-DATA_PATH = os.path.join(SCRIPT_PATH,'..','data')
-LANG = 'ko' # TODO: Lang selection
+import click
 
 def print_welcome():
     print('-'*80)
     print("AI Text Adventure PROTOTYPE A")
 
-def get_random_initial_prompt():
-    plot = open(os.path.join(DATA_PATH,LANG,'plot')).readlines()
-    protagonist_explanation = open(os.path.join(DATA_PATH,LANG,'protagonist_explanation')).readlines()
-    protagonist_type = open(os.path.join(DATA_PATH,LANG,'protagonist_type')).readlines()
-    story_about = open(os.path.join(DATA_PATH,LANG,'story_about')).readlines()
-    story_begin = open(os.path.join(DATA_PATH,LANG,'story_begin')).readlines()
-    
-    plot = random.choice(plot)
-    protagonist_explanation = random.choices(protagonist_explanation,k=2)
-    protagonist_type = random.choices(protagonist_type,k=2)
-    story_about = random.choice(story_about)
-    story_begin = random.choice(story_begin)
-    
-    actor_string = f"이 이야기는 {protagonist_explanation[0]}한 {protagonist_type[0]}와 {protagonist_explanation[1]}한 {protagonist_type[1]}의 이야기이다."
-    story_start_string = f"{story_about}에 대해 {plot}하며 {story_begin}(으)로 시작한다."
-
-    return str(actor_string + story_start_string)
-
-def run_adventure():
-    # Initial config
-    print("1) 수동으로 새 게임 만들기\n2) 자동으로 새 게임 만들기\n3) 불러오기")
-    
-    supported_fantasy_types = ["영웅","역사","중세","소드 앤 소서리","코믹","서사시","다크","디스토피아","현실주의적"]
-    
-    print("")
-    
-    # Loop
-    '''
+def get_choice(choices, skip_newline = False, return_choice_id = False):
+    choice_num = 0
     while True:
-        time.sleep(1)
-    '''
+        for i, choice in enumerate(choices):
+            if i == choice_num:
+                print(f" ⇨ {i+1}. {choice}", end='')
+            else:
+                print(f"   {i+1}. {choice}", end='')
+            if not skip_newline:
+                print('')
+        rawinput = click.getchar()
+        if rawinput == '\x0D':
+            break
+        if rawinput == KEY_DOWN:
+            choice_num += 1
+            if choice_num >= len(choices):
+                choice_num = len(choices) - 1
+        elif rawinput == KEY_UP:
+            choice_num -= 1
+            if choice_num < 0:
+                choice_num = 0
+        for _ in choices:
+            sys.stdout.write(CURSOR_UP_ONE) 
+            sys.stdout.write(ERASE_LINE) 
+    if return_choice_id:
+        return choice_num
+    for _ in choices:
+            sys.stdout.write(CURSOR_UP_ONE) 
+            sys.stdout.write(ERASE_LINE) 
+    return choices[choice_num]
 
-def main():
+def get_random_initial_prompt(LANG='ko'):
+    plot = open(os.path.join(DATA_PATH,LANG,'plot')).read().split('\n')
+    protagonist_explanation = open(os.path.join(DATA_PATH,LANG,'protagonist_explanation')).read().split('\n')
+    protagonist_type = open(os.path.join(DATA_PATH,LANG,'protagonist_type')).read().split('\n')
+    story_about = open(os.path.join(DATA_PATH,LANG,'story_about')).read().split('\n')
+    story_begin = open(os.path.join(DATA_PATH,LANG,'story_begin')).read().split('\n')
+    
+    if LANG == 'ko':
+        actor_string = f"이 이야기는 {random.choice(protagonist_explanation)} {random.choice(protagonist_type)}와 "
+        actor_string += f"{random.choice(protagonist_explanation)} {random.choice(protagonist_type)}의 이야기이다.\n"
+        story_start_string = f"{random.choice(story_begin)} {random.choice(plot)} {random.choice(story_about)} 이야기가 시작된다."
+
+    elif LANG == 'en':
+        actor_string = f"The story is about {random.choice(protagonist_explanation)} {random.choice(protagonist_type)} and "
+        actor_string += f"{random.choice(protagonist_explanation)} {random.choice(protagonist_type)}\n"
+        story_start_string = f"It is a story about {random.choice(story_about)} {random.choice(story_begin)} {random.choice(plot)}"
+
+    return actor_string + story_start_string
+
+def save():
+    savefile = os.path.join(DATA_PATH,'savefile')
+    with open(savefile,'w') as f:
+        f.writelines(history)
+    return
+
+def load_save():
+    savefile = os.path.join(DATA_PATH,'savefile')
+    with open(savefile,'r') as f:
+        history = f.readlines()
+    return history
+
+def run_adventure(flags):
+    # Initial config
+    global history
+    history = []
+    if input("불러오려면 load를 입력해 주세요(건너뛰려면 Enter):") == 'load':
+        history = load_save()
+    else:
+        supported_fantasy_types = ["영웅","역사","중세","소드 앤 소서리","코믹","서사시","다크","디스토피아","현실주의적"]
+        
+        print("원하는 판타지 종류를 선택해 주세요:")
+        story_type = get_choice(supported_fantasy_types)
+
+        print(story_type, '이야기를 시작합니다.')
+        print('-'*80,'\n')
+
+        init_prompt = get_random_initial_prompt(LANG)
+        print(init_prompt)
+        print("\n\n이제 당신은 이야기의 주인공이자 해설자, 진행자 입니다.")
+        print("무슨 이야기가 이루어질지, 써내려 가면서 즐겨보세요.\n\n")
+    
+    print("※ 저장은 save를 입력하시면 됩니다. 프로그램 종료 시에도 저장됩니다.")
+
+    print("선택지를 제공해드릴까요?")
+    flags.simple_mode = True if get_choice([YES,NO]) == YES else False
+    # Loop
+    if flags.simple_mode:
+        '''
+        MOVE_MODE
+        FIGHT_MODE
+        TALK_MODE
+        3가지로 나누어 구현
+        '''
+        while True:
+            mode = get_choice([MOVE_MODE,FIGHT_MODE,TALK_MODE])
+            if mode == MOVE_MODE:
+                available_ways = ['동','서','남','북']
+                movement = f"나는 {get_choice(available_ways)}쪽으로 이동했다."
+                print(movement)
+                history.append(movement + "\n")
+                output = "Placeholder for data generated from prompt " + movement
+                print(output)
+                history.append(output + '\n')
+            elif mode == FIGHT_MODE:
+                # TODO: ENTER FIGHT SCENE
+                pass
+            elif mode == TALK_MODE:
+                pass
+        
+    else:
+        while True:
+            user_input = input('> ')
+            if user_input == 'save':
+                save()
+                print('\n저장됨.\n')
+                continue
+            history.append(user_input + "\n")
+            output = "Placeholder for data generated from prompt " + user_input
+            print(output)
+            history.append(output + '\n')
+
+def main(flags):
+    global LANG
+    LANG = flags.LANG
     print_welcome()
     try:
-        run_adventure()
+        run_adventure(flags)
     except KeyboardInterrupt:
-        print("\nBye.")
+        print("\n저장 중...")
+        save()
         sys.exit()
-    
-main()

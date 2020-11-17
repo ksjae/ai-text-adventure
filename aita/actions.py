@@ -88,7 +88,7 @@ def buy(source: Actor,
     target.removegold(price)
 
     source.remove_items(thing)
-    target.items(thing)
+    target.add_items(thing)
 
 def get(target: Actor,
         thing: Item):
