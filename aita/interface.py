@@ -52,7 +52,7 @@ def get_random_initial_prompt(LANG='ko'):
     if LANG == 'ko':
         actor_string = f"이 이야기는 {random.choice(protagonist_explanation)} {random.choice(protagonist_type)}와 "
         actor_string += f"{random.choice(protagonist_explanation)} {random.choice(protagonist_type)}의 이야기이다.\n"
-        story_start_string = f"{random.choice(story_about)}에 대해 {random.choice(story_begin)} {random.choice(plot)} 시작한다."
+        story_start_string = f"{random.choice(story_begin)} {random.choice(plot)} {random.choice(story_about)} 이야기가 시작된다."
 
     elif LANG == 'en':
         actor_string = f"The story is about {random.choice(protagonist_explanation)} {random.choice(protagonist_type)} and "
@@ -111,8 +111,10 @@ def run_adventure(flags):
                 available_ways = ['동','서','남','북']
                 movement = f"나는 {get_choice(available_ways)}쪽으로 이동했다."
                 print(movement)
-                history.append(movement)
-                print("Placeholder for data generated from", movement)
+                history.append(movement + "\n")
+                output = "Placeholder for data generated from prompt " + movement
+                print(output)
+                history.append(output + '\n')
             elif mode == FIGHT_MODE:
                 # TODO: ENTER FIGHT SCENE
                 pass
@@ -126,8 +128,10 @@ def run_adventure(flags):
                 save()
                 print('\n저장됨.\n')
                 continue
-            print("Placeholder for data generated from prompt", user_input)
-            history.append(user_input)
+            history.append(user_input + "\n")
+            output = "Placeholder for data generated from prompt " + user_input
+            print(output)
+            history.append(output + '\n')
 
 def main(flags):
     global LANG
