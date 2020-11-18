@@ -1,2 +1,6 @@
 pytest
 tensorflow==2.3.1
+python-console-menu==1.1.0
+tqdm
+click==7.1.2
+requests
