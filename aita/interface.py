@@ -113,8 +113,7 @@ def run_adventure(flags, generator: Generator):
                 available_ways = ['동','서','남','북']
                 movement = f"나는 {get_choice(available_ways)}쪽으로 이동했다."
                 print(movement)
-                history.append(movement + "\n")
-                output = "Placeholder for data generated from prompt " + movement
+                output = generator.from_prompt(movement)
                 print(output)
                 history.append(output + '\n')
             elif mode == FIGHT_MODE:
@@ -132,7 +131,7 @@ def run_adventure(flags, generator: Generator):
                 continue
             sys.stdout.write(CURSOR_UP_ONE) 
             sys.stdout.write(ERASE_LINE) 
-            output = generator.from_prompt(user_input,length=50)
+            output = generator.from_prompt(user_input,length=20)
             print(output)
             history.append(output + '\n')
 

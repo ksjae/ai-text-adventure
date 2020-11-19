@@ -16,7 +16,8 @@ Recommended : python 3.8.5 and a nvidia graphics card(supports CUDA 10.1) with m
 2. ```python3 -m venv aita```
 3. ```source aita/bin/activate```
 4. ```pip install -r requirements.txt```
-5. ```python3 main.py```
+5. (only for macOS 11.0+) Install tensorflow from [here](https://github.com/apple/tensorflow_macos/releases).
+6. ```python3 main.py```
 
 ## Using the framework
 

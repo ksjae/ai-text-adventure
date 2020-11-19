@@ -17,6 +17,7 @@
 2. ```python3 -m venv aita```
 3. ```source aita/bin/activate```
 4. ```pip install -r requirements.txt```
+5. (macOS 11.0+ 이상만 해당) [여기](https://github.com/apple/tensorflow_macos/releases)서 tensorflow를 설치하세요 (더 빠릅니다).
 5. ```python3 main.py```
 
 ## 프레임워크 이용하기

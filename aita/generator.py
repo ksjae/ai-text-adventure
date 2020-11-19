@@ -96,18 +96,18 @@ class TFGenerator(Generator):
 
 class HFGenerator:
     def __init__(self, model_path=HF_MODEL_PATH):
-        from transformers import GPT2LMHeadModel, GPT2Tokenizer
+        from transformers import TFGPT2LMHeadModel, GPT2Tokenizer
         self.tokenizer = GPT2Tokenizer.from_pretrained(model_path)
         # add the EOS token as PAD token to avoid warnings
-        self.model = GPT2LMHeadModel.from_pretrained(model_path, pad_token_id=self.tokenizer.eos_token_id)
+        self.model = TFGPT2LMHeadModel.from_pretrained(model_path, pad_token_id=self.tokenizer.eos_token_id)
     def from_prompt(self, prompt="...", length=50, remove_prompt=False):
         # encode context the generation is conditioned on
-        input_ids = self.tokenizer.encode(prompt, return_tensors='pt')
+        input_ids = self.tokenizer.encode(prompt, return_tensors='tf')
         sample_outputs = self.model.generate(
             input_ids,
             do_sample=True, 
             min_length=length, 
-            max_length=min(2*length, 800),
+            max_length=min(2*length, 200),
             top_k=TOP_K, 
             top_p=TOP_P, 
             num_return_sequences=1,
