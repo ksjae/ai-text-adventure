@@ -100,9 +100,9 @@ class HFGenerator:
         self.tokenizer = GPT2Tokenizer.from_pretrained(model_path)
         # add the EOS token as PAD token to avoid warnings
         self.model = GPT2LMHeadModel.from_pretrained(model_path, pad_token_id=self.tokenizer.eos_token_id)
-    def generate(self, prompt="...", length=50, remove_prompt=False):
+    def from_prompt(self, prompt="...", length=50, remove_prompt=False):
         # encode context the generation is conditioned on
-        input_ids = self.tokenizer.encode(prompt, return_tensors='tf')
+        input_ids = self.tokenizer.encode(prompt, return_tensors='pt')
         sample_outputs = self.model.generate(
             input_ids,
             do_sample=True, 
@@ -112,7 +112,7 @@ class HFGenerator:
             top_p=TOP_P, 
             num_return_sequences=1,
             temperature=TEMPERATURE,
-            repetition_penalty=10
+            repetition_penalty=10.0
         )
         output_text = str(self.tokenizer.decode(sample_outputs[0], skip_special_tokens=True))
         output_text = output_text.split('.')[:-1]

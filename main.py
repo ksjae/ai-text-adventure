@@ -11,7 +11,7 @@ import time
 import requests
 
 flags = AppFlags()
-flags.is_dev = True
+flags.is_dev = False
 flags.use_generator = True
 
 def download_model():
@@ -33,41 +33,49 @@ def download_model():
                 # on each chunk update the progress bar.
                 progress.update(datasize)
 
-generator = None
+def checkInternetRequests(url='http://www.google.com/', timeout=3):
+    '''
+    Checks for internet connectivity
+    source: https://medium.com/better-programming/how-to-check-the-users-internet-connection-in-python-224e32d870c8
+    '''
+    try:
+        r = requests.head(url, timeout=timeout)
+        return True
+    except requests.ConnectionError as ex:
+        print(ex)
+        return False
+
+generator = Generator()
 
 if not flags.is_dev:
-    flags.LANG = input('ENTER LANGUAGE CODE (en/ko) : ')
+    input('PRESS ENTER TO CONTINUE\n')
+    flags.LANG = input('Which language should I use? (en/ko) : ')
     NO_MODEL = True
     flags.model_path = os.path.join(SCRIPT_PATH,'model')
     if flags.LANG == 'ko':
         if os.path.exists(os.path.join(SCRIPT_PATH,'model','pytorch_model.bin')):
             flags.model_type = 'torch'
+            NO_MODEL = False
         elif os.path.exists(os.path.join(SCRIPT_PATH,'model','model-ckpt-800000.index')):
             flags.model_type = 'tf'
-        else NO_MODEL = False
+            NO_MODEL = False
+
     elif flags.LANG == 'en':
         flags.model_type = 'torch'
-        
-    else:
+        flags.model_path = 'gpt2'
+        NO_MODEL = False
+
+    if NO_MODEL:
         print("AI model is not found. Download it?", end='')
         if input('(Y/n)').lower() == 'y':
             download_model()
         else: 
             print('Using online feature.')
-            # TODO: Check internet
-            print('Online feature requires subscription. Please enter your ID.')
+            if checkInternetRequests() is False:
+                print("INTERNET REQUIRED. Please check internet connectivity or change back to local mode.")
+                quit()
             
-            ## AUTH ##
-            user_id = input('ID: ')
-            while True:
-                response = requests.get(f"{AUTH_ENDPOINT}/{user_id}")
-                if response.status_code != 200:
-                    print('Wrong ID :(')
-                    time.sleep(1)
-                    user_id = input('ID: ')
-                else:
-                    break
-            flags.user_id = user_id
+    print('LOADING...')
     
     if flags.model_type == 'torch':
         generator = HFGenerator(flags.model_path)

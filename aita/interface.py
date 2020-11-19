@@ -55,9 +55,9 @@ def get_random_initial_prompt(LANG='ko'):
         story_start_string = f"{random.choice(story_begin)} {random.choice(plot)} {random.choice(story_about)} 이야기가 시작된다."
 
     elif LANG == 'en':
-        actor_string = f"The story is about {random.choice(protagonist_explanation)} {random.choice(protagonist_type)} and "
-        actor_string += f"{random.choice(protagonist_explanation)} {random.choice(protagonist_type)}\n"
-        story_start_string = f"It is a story about {random.choice(story_about)} {random.choice(story_begin)} {random.choice(plot)}"
+        actor_string = f"The story is about {random.choice(protagonist_type)} who {random.choice(protagonist_explanation)} and "
+        actor_string += f"{random.choice(protagonist_type)} who {random.choice(protagonist_explanation)}\n"
+        story_start_string = f"It is a story about {random.choice(story_about)} The story begins {random.choice(story_begin)} {random.choice(plot)}"
 
     return actor_string + story_start_string
 
@@ -73,7 +73,7 @@ def load_save():
         history = f.readlines()
     return history
 
-def run_adventure(flags, generator):
+def run_adventure(flags, generator: Generator):
     # Initial config
     global history
     history = []
@@ -97,6 +97,8 @@ def run_adventure(flags, generator):
 
     print("선택지를 제공해드릴까요?")
     flags.simple_mode = True if get_choice([YES,NO]) == YES else False
+    sys.stdout.write(CURSOR_UP_ONE) 
+    sys.stdout.write(ERASE_LINE) 
     # Loop
     if flags.simple_mode:
         '''
@@ -128,8 +130,9 @@ def run_adventure(flags, generator):
                 save()
                 print('\n저장됨.\n')
                 continue
-            history.append(user_input + "\n")
-            output = "Placeholder for data generated from prompt " + user_input
+            sys.stdout.write(CURSOR_UP_ONE) 
+            sys.stdout.write(ERASE_LINE) 
+            output = generator.from_prompt(user_input,length=50)
             print(output)
             history.append(output + '\n')
 
