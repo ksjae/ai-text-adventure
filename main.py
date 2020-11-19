@@ -1,6 +1,7 @@
 from aita.interface import main
 from aita.customclass import *
 from aita.constants import *
+from aita.generator import *
 from tqdm import tqdm
 from pathlib import Path
 
@@ -11,6 +12,7 @@ import requests
 
 flags = AppFlags()
 flags.is_dev = True
+flags.use_generator = True
 
 def download_model():
     filesize = int(requests.head(url).headers["Content-Length"])
@@ -31,14 +33,21 @@ def download_model():
                 # on each chunk update the progress bar.
                 progress.update(datasize)
 
+generator = None
+
 if not flags.is_dev:
     flags.LANG = input('ENTER LANGUAGE CODE (en/ko) : ')
-    if os.path.exists(os.path.join(SCRIPT_PATH,'model','pytorch_model.bin')):
-        flags.model_path = os.path.join(SCRIPT_PATH,'model')
+    NO_MODEL = True
+    flags.model_path = os.path.join(SCRIPT_PATH,'model')
+    if flags.LANG == 'ko':
+        if os.path.exists(os.path.join(SCRIPT_PATH,'model','pytorch_model.bin')):
+            flags.model_type = 'torch'
+        elif os.path.exists(os.path.join(SCRIPT_PATH,'model','model-ckpt-800000.index')):
+            flags.model_type = 'tf'
+        else NO_MODEL = False
+    elif flags.LANG == 'en':
         flags.model_type = 'torch'
-    elif os.path.exists(os.path.join(SCRIPT_PATH,'model','model-ckpt-800000.index')):
-        flags.model_path = os.path.join(SCRIPT_PATH,'model')
-        flags.model_type = 'tf'
+        
     else:
         print("AI model is not found. Download it?", end='')
         if input('(Y/n)').lower() == 'y':
@@ -59,6 +68,8 @@ if not flags.is_dev:
                 else:
                     break
             flags.user_id = user_id
-            
+    
+    if flags.model_type == 'torch':
+        generator = HFGenerator(flags.model_path)
 
-main(flags)
+main(flags, generator)

@@ -331,6 +331,7 @@ class AppFlags:
     is_dev = False
     LANG = 'ko'
     simple_mode = True
+    use_generator = True
 
     @property
     def is_authenticated(self):

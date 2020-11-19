@@ -95,11 +95,11 @@ class TFGenerator(Generator):
         return None
 
 class HFGenerator:
-    def __init__(self):
+    def __init__(self, model_path=HF_MODEL_PATH):
         from transformers import GPT2LMHeadModel, GPT2Tokenizer
-        self.tokenizer = GPT2Tokenizer.from_pretrained(os.path.join(SCRIPT_PATH, 'kotok'))
+        self.tokenizer = GPT2Tokenizer.from_pretrained(model_path)
         # add the EOS token as PAD token to avoid warnings
-        self.model = GPT2LMHeadModel.from_pretrained(HF_MODEL_PATH, pad_token_id=self.tokenizer.eos_token_id)
+        self.model = GPT2LMHeadModel.from_pretrained(model_path, pad_token_id=self.tokenizer.eos_token_id)
     def generate(self, prompt="...", length=50, remove_prompt=False):
         # encode context the generation is conditioned on
         input_ids = self.tokenizer.encode(prompt, return_tensors='tf')

@@ -73,7 +73,7 @@ def load_save():
         history = f.readlines()
     return history
 
-def run_adventure(flags):
+def run_adventure(flags, generator):
     # Initial config
     global history
     history = []
@@ -133,12 +133,12 @@ def run_adventure(flags):
             print(output)
             history.append(output + '\n')
 
-def main(flags):
+def main(flags, generator=None):
     global LANG
     LANG = flags.LANG
     print_welcome()
     try:
-        run_adventure(flags)
+        run_adventure(flags, generator)
     except KeyboardInterrupt:
         print("\n저장 중...")
         save()

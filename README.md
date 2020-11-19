@@ -2,6 +2,7 @@
 [![Build Status](https://img.shields.io/endpoint.svg?url=https%3A%2F%2Factions-badge.atrox.dev%2Fksjae%2Fai-text-adventure%2Fbadge&style=flat)](https://actions-badge.atrox.dev/ksjae/ai-text-adventure/goto)
 
 A text adventure game example based on [custom pretrained GPT2](https://github.com/ksjae/KoGPT). 
+한국어 매뉴얼은 README_KR.md를 참조해 주세요.
 
 *This program is developed actively, and may not be stable.*
 
