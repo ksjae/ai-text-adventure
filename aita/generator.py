@@ -3,10 +3,11 @@ import os
 import argparse
 import json
 import re
+import click
 
 from aita.customclass import *
 from aita.constants import *
-
+from termios import tcflush, TCIFLUSH
 
 TOP_P = 0.9
 TOP_K = 0 # 0 sets to greedy mode.
@@ -98,11 +99,11 @@ class HFGenerator:
     def __init__(self, model_path=HF_MODEL_PATH):
         from transformers import TFGPT2LMHeadModel, GPT2Tokenizer
         self.tokenizer = GPT2Tokenizer.from_pretrained(model_path)
-        # add the EOS token as PAD token to avoid warnings
         self.model = TFGPT2LMHeadModel.from_pretrained(model_path, pad_token_id=self.tokenizer.eos_token_id)
     def from_prompt(self, prompt="...", length=50, remove_prompt=False):
-        # encode context the generation is conditioned on
         input_ids = self.tokenizer.encode(prompt, return_tensors='tf')
+        if input_ids is None:
+            return ""
         sample_outputs = self.model.generate(
             input_ids,
             do_sample=True, 
@@ -127,13 +128,22 @@ class ChoiceGenerator:
         self.__choices = []
 
     def add_choice(self, content):
-        pass
+        self.__choices.append(content)
 
-    def remove_choice_by_id(self, id):
-        pass
+    def add_choices_list(self, lst):
+        self.__choices.extend(lst)
+
+    def remove_choice_by_id(self, _id):
+        try:
+            self.__choices.pop(_id)
+        except:
+            raise NonExistent
 
     def remove_choice_by_name(self, name):
-        pass
+        try:
+            self.__choices.remove(name)
+        except:
+            raise NonExistent
 
     @property
     def choices(self):
@@ -152,6 +162,7 @@ class ChoiceGenerator:
         choice_num = 0
         while True:
             self.print_choices(choice_num, skip_newline=skip_newline)
+            tcflush(sys.stdin, TCIFLUSH)
             rawinput = click.getchar()
             if rawinput == '\x0D':
                 break
@@ -163,9 +174,13 @@ class ChoiceGenerator:
                 choice_num -= 1
                 if choice_num < 0:
                     choice_num = 0
-            for _ in choices:
+            for _ in self.choices:
                 sys.stdout.write(CURSOR_UP_ONE) 
-                sys.stdout.write(ERASE_LINE) 
+                sys.stdout.write(ERASE_LINE)
+        for _ in self.choices:
+            sys.stdout.write(CURSOR_UP_ONE) 
+            sys.stdout.write(ERASE_LINE) 
+        sys.stdout.flush()
         if return_choice_id:
             return choice_num
         return self.choices[choice_num]
@@ -174,13 +189,100 @@ class FightSceneGen(ChoiceGenerator):
     '''
     Inspired from Filip Hracek's method of fight render.
     '''
-    pass
+    def __init__(self):
+        super().__init__()
+        self.weapon_chooser = ChoiceGenerator()
+        self.target_chooser = ChoiceGenerator()
+        self.binary_chooser = ChoiceGenerator()
+        part = ANATOMY
+        self.target_chooser.add_choices_list([part.arm,part.leg,part.torso,part.head])
+        self.binary_chooser.add_choices_list([YES, NO])
+
+    def find_weapon(self, item_list: list, attack_type: AttackType):
+        weapons_avail = item_list
+        for item in weapons_avail:
+            if item.item_type == attack_type:
+                weapons_avail.remove(item)
+        return weapons_avail
+
+    def get_physical_choice(self, actor: Actor):
+        print('무엇으로 공격하시겠습니까?')
+        self.weapon_chooser.add_choices_list(self.find_weapon(actor.items, AttackType.melee))
+        weapon = self.weapon_chooser.get_choice()
+
+        print('어딜 공격하시겠습니까?')
+        target = self.target_chooser.get_choice()
+
+        return weapon, target
+    
+    def get_magical_choice(self, actor: Actor):
+        print('어떤 마법을 이용하시겠습니까?')
+        self.weapon_chooser.add_choices_list(self.find_weapon(actor.items, AttackType.magical))
+        weapon = self.weapon_chooser.get_choice()
+        if weapon.affetcs_area:
+            target = '*'
+        else:
+            print('어딜 공격하시겠습니까?')
+            target = self.target_chooser.get_choice()
+
+        return weapon, target
+
+    def get_bow_choice(self, actor: Actor):
+        print('무슨 활로 공격하시겠습니까?')
+        self.weapon_chooser.add_choices_list(self.find_weapon(actor.items, AttackType.ranged))
+        weapon = self.weapon_chooser.get_choice()
+
+        print('무슨 부위를 공격하시겠습니까?')
+        target = self.target_chooser.get_choice()
+
+        return weapon, target
+
+    def get_fight_choice(self, actor: Actor):
+        chooser = ChoiceGenerator()
+        chooser.add_choices_list(['달려들기','활 꺼내기','마법 준비하기','무시'])
+        choice = chooser.get_choice(return_choice_id=True)
+        if choice == 1:
+            return self.get_physical_choice(actor)
+        elif choice == 2:
+            return self.get_bow_choice(actor)
+        elif choice == 3:
+            return self.get_magical_choice(actor)
+        else:
+            return None, None
+    
+    def generate_action(self, actor: Actor, detail_level=0):
+        '''
+        Limelight-ish actor action description generator
+        detail level 0 : ignore
+        detail level 1 : 'swings knife'
+        detail level 2 : 'stabs the rabbit in the eye'
+        detail level 3 : 'stabs the rabbit in the eye. It tries to move, but hits a tree.'
+        '''
+        pass
 
 class QuestSceneGen(ChoiceGenerator):
     '''
     Takes care of events after initiating talk from character to generating & adding quests
     '''
-    pass
+    def __init__(self):
+        super().__init__()
+
+    def get_choice(self):
+        pass
 
 class MerchantSceneGen(ChoiceGenerator):
     pass
+
+
+class NPCGen():
+    '''
+    Generates NPCs.
+    NPC: *All* default in-game character
+    '''
+    def __init__(self, **defaults):
+        '''
+        Initialize a NPC making factory - such as police, etc.
+        '''
+        pass
+    def generate(self):
+        return Actor()

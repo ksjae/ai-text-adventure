@@ -1,4 +1,5 @@
 import os
+from aita.customclass import *
 # PATH
 SCRIPT_PATH = os.path.join(os.path.dirname(os.path.realpath(__file__)),'..')
 DATA_PATH = os.path.join(SCRIPT_PATH,'data')
@@ -23,3 +24,9 @@ FIGHT_MODE = "전투"
 TALK_MODE = "대화"
 YES = '네'
 NO = '아니오'
+
+# Variables
+ANATOMY = Anatomy(head=Head(),
+                torso=Torso(),
+                arm=Arm(),
+                leg=Leg(),)

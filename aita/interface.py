@@ -1,6 +1,8 @@
 from aita.customclass import *
 from aita.generator import *
 from aita.constants import *
+from aita.translation import *
+from termios import tcflush, TCIOFLUSH
 import os
 import random
 import sys
@@ -21,6 +23,7 @@ def get_choice(choices, skip_newline = False, return_choice_id = False):
                 print(f"   {i+1}. {choice}", end='')
             if not skip_newline:
                 print('')
+        tcflush(sys.stdin, TCIFLUSH)
         rawinput = click.getchar()
         if rawinput == '\x0D':
             break
@@ -39,7 +42,8 @@ def get_choice(choices, skip_newline = False, return_choice_id = False):
         return choice_num
     for _ in choices:
             sys.stdout.write(CURSOR_UP_ONE) 
-            sys.stdout.write(ERASE_LINE) 
+            sys.stdout.write(ERASE_LINE)
+    sys.stdout.flush()
     return choices[choice_num]
 
 def get_random_initial_prompt(LANG='ko'):
@@ -73,7 +77,7 @@ def load_save():
         history = f.readlines()
     return history
 
-def run_adventure(flags, generator: Generator):
+def run_adventure(flags, generator: Generator, translation: Translation):
     # Initial config
     global history
     history = []
@@ -98,7 +102,28 @@ def run_adventure(flags, generator: Generator):
     print("선택지를 제공해드릴까요?")
     flags.simple_mode = True if get_choice([YES,NO]) == YES else False
     sys.stdout.write(CURSOR_UP_ONE) 
-    sys.stdout.write(ERASE_LINE) 
+    sys.stdout.write(ERASE_LINE)
+
+    sys.stdout.flush()
+
+    # INIT
+    player = Actor()
+    fist = Item()
+    fist.give_name(translation.fist)
+    fist.set_type(AttackType.melee)
+    fist.delta_stat = Stat(1,1)
+    player.add_item(fist)
+    bow = Item()
+    bow.give_name(translation.bow)
+    bow.set_type(AttackType.ranged)
+    bow.delta_stat = Stat(1,0,0)
+    player.add_item(bow)
+    lightning = Item()
+    lightning.give_name(translation.bow)
+    lightning.set_type(AttackType.magical)
+    lightning.delta_stat = Stat(1,0,0)
+    player.add_item(lightning)
+
     # Loop
     if flags.simple_mode:
         '''
@@ -107,20 +132,26 @@ def run_adventure(flags, generator: Generator):
         TALK_MODE
         3가지로 나누어 구현
         '''
+
+        fight_gen = FightSceneGen()
+
         while True:
             mode = get_choice([MOVE_MODE,FIGHT_MODE,TALK_MODE])
             if mode == MOVE_MODE:
                 available_ways = ['동','서','남','북']
-                movement = f"나는 {get_choice(available_ways)}쪽으로 이동했다."
-                print(movement)
-                output = generator.from_prompt(movement)
-                print(output)
-                history.append(output + '\n')
+                choice = f"나는 {get_choice(available_ways)}쪽으로 이동했다."
             elif mode == FIGHT_MODE:
-                # TODO: ENTER FIGHT SCENE
-                pass
+                weapon, target = fight_gen.get_fight_choice(player)
+                if target == '*':
+                    choice = f"나는 {weapon}으로 공격했다."
+                elif target is not None:
+                    choice = f"나는 {weapon}으로 {target}을 공격했다."
             elif mode == TALK_MODE:
-                pass
+                choice = f"\"{input('> ')}\""
+            output = generator.from_prompt(choice)
+            print(output)
+            if output is not None:
+                history.append(output + '\n')
         
     else:
         while True:
@@ -130,17 +161,19 @@ def run_adventure(flags, generator: Generator):
                 print('\n저장됨.\n')
                 continue
             sys.stdout.write(CURSOR_UP_ONE) 
-            sys.stdout.write(ERASE_LINE) 
+            sys.stdout.write(ERASE_LINE)
             output = generator.from_prompt(user_input,length=20)
             print(output)
-            history.append(output + '\n')
+            if output is not None:
+                history.append(output + '\n')
 
 def main(flags, generator=None):
     global LANG
     LANG = flags.LANG
+    translation = initialize_translation(flags.LANG)
     print_welcome()
     try:
-        run_adventure(flags, generator)
+        run_adventure(flags, generator, translation)
     except KeyboardInterrupt:
         print("\n저장 중...")
         save()
