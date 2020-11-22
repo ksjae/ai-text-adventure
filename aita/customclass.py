@@ -5,6 +5,7 @@ import random
 from aita.errors import *
 
 class Damage(Enum):
+    none = 0
     cleaving = 1
     slashing = 2
     thrusting = 3
@@ -61,10 +62,24 @@ class Item:
     raw_price: int
     health: Health
     damage: Damage
+    name: str
     iid: int
+    item_type: AttackType
+    affects_area: bool
     def __init__(self):
         self.wear=10
         self.iid = ''.join([str(random.randint(0, 9)) for i in range(10)])  # This ain't crpyto, it'll do
+
+    def give_name(self, name):
+        self.name = name
+    def set_type(self, item_type):
+        if type(item_type) is AttackType:
+            self.item_type = item_type
+        else:
+            raise ValueError
+    def __str__(self):
+        return self.name
+
 class Gold(Item):
     count: int
     unit: str
@@ -85,7 +100,6 @@ class Gold(Item):
 class Bodypart(Item):
     vital: bool
     _stat_portion: Stat
-    name: str
     valid_damage: Damage
     defending: bool
     def __init__(self):
@@ -98,6 +112,7 @@ class Head(Bodypart):
         self.vital = True
         self.name="머리"
         self.health = Health(10)
+    
 class Torso(Bodypart):
     _stat_portion = Stat(0,0)
     def __init__(self):
@@ -105,6 +120,7 @@ class Torso(Bodypart):
         self.vital = True
         self.name="가슴"
         self.health = Health(10)
+
 class Stomach(Torso):
     _stat_portion = Stat(0,1)
     def __init__(self):
@@ -112,6 +128,7 @@ class Stomach(Torso):
         self.vital = True
         self.name="배"
         self.health = Health(5)
+
 class Waist(Torso):
     _stat_portion = Stat(0,2)
     def __init__(self):
@@ -119,6 +136,7 @@ class Waist(Torso):
         self.vital = False
         self.name="허리"
         self.health = Health(1)
+
 class Arm(Bodypart):
     _stat_portion = Stat(10,10)
     def __init__(self):
@@ -126,6 +144,7 @@ class Arm(Bodypart):
         self.vital = False
         self.name="팔"
         self.health = Health(2)
+
 class Leg(Bodypart):
     _stat_portion = Stat(5,5)
     def __init__(self):
@@ -133,6 +152,7 @@ class Leg(Bodypart):
         self.vital = False
         self.name="다리"
         self.health = Health(2)
+
 class Pose:
     def __init__(self):
         self.standing = True
@@ -220,7 +240,7 @@ class Actor:
     def items(self):
         return self.__items
 
-    def add_items(self, item:Item):
+    def add_item(self, item:Item):
         self.__items.append(item)
 
     def remove_items(self, item: Item):
@@ -228,6 +248,14 @@ class Actor:
             if owned_item.iid == item.iid:
                 return self.__items.pop(i)
         raise NonExistent
+
+    @property
+    def weapons(self):
+        weapons = []
+        for item in enumerate(self.__items):
+            if item.delta_stat.attack > 0:
+                weapons.append(item)
+        return weapons
 
     @property
     def spellAblilty(self):
@@ -277,10 +305,10 @@ class Actor:
     def gold(self, ):
         return self._gold
 
-    def addgold(self, amount):
+    def add_gold(self, amount):
         self._gold += amount
 
-    def removegold(self, amount):
+    def remove_gold(self, amount):
         self._gold -= amount
 
 class Event:
@@ -331,6 +359,7 @@ class AppFlags:
     is_dev = False
     LANG = 'ko'
     simple_mode = True
+    use_generator = True
 
     @property
     def is_authenticated(self):

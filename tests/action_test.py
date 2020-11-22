@@ -52,7 +52,7 @@ def test_purchase():
 
     get_gold(character1, 10)
     thing = Item()
-    character2.add_items(thing)
+    character2.add_item(thing)
 
     buy(character2, character1, thing, 10)
 

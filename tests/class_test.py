@@ -24,7 +24,7 @@ def test_armor():
     character = Actor()
     armor = Item()
     armor.delta_stat = Stat(10,10,10,1,2,3,4)
-    character.add_items(armor)
+    character.add_item(armor)
     print('Armor :', character.armor)
 
 def test_queue():
