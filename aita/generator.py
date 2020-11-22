@@ -7,6 +7,7 @@ import click
 
 from aita.customclass import *
 from aita.constants import *
+from aita.translation import Translation
 from termios import tcflush, TCIFLUSH
 
 TOP_P = 0.9
@@ -101,6 +102,8 @@ class HFGenerator:
         self.tokenizer = GPT2Tokenizer.from_pretrained(model_path)
         self.model = TFGPT2LMHeadModel.from_pretrained(model_path, pad_token_id=self.tokenizer.eos_token_id)
     def from_prompt(self, prompt="...", length=50, remove_prompt=False):
+        if prompt is None:
+            prompt = '. '
         input_ids = self.tokenizer.encode(prompt, return_tensors='tf')
         if input_ids is None:
             return ""
@@ -189,14 +192,15 @@ class FightSceneGen(ChoiceGenerator):
     '''
     Inspired from Filip Hracek's method of fight render.
     '''
-    def __init__(self):
+    def __init__(self, translation: Translation):
         super().__init__()
+        self.translation = translation
         self.weapon_chooser = ChoiceGenerator()
         self.target_chooser = ChoiceGenerator()
         self.binary_chooser = ChoiceGenerator()
         part = ANATOMY
         self.target_chooser.add_choices_list([part.arm,part.leg,part.torso,part.head])
-        self.binary_chooser.add_choices_list([YES, NO])
+        self.binary_chooser.add_choices_list([self.translation.yes, self.translation.no])
 
     def find_weapon(self, item_list: list, attack_type: AttackType):
         weapons_avail = item_list
@@ -206,40 +210,40 @@ class FightSceneGen(ChoiceGenerator):
         return weapons_avail
 
     def get_physical_choice(self, actor: Actor):
-        print('무엇으로 공격하시겠습니까?')
+        print(self.translation.attack_with)
         self.weapon_chooser.add_choices_list(self.find_weapon(actor.items, AttackType.melee))
         weapon = self.weapon_chooser.get_choice()
 
-        print('어딜 공격하시겠습니까?')
+        print(self.translation.attack_where)
         target = self.target_chooser.get_choice()
 
         return weapon, target
     
     def get_magical_choice(self, actor: Actor):
-        print('어떤 마법을 이용하시겠습니까?')
+        print(self.translation.which_magic)
         self.weapon_chooser.add_choices_list(self.find_weapon(actor.items, AttackType.magical))
         weapon = self.weapon_chooser.get_choice()
         if weapon.affetcs_area:
             target = '*'
         else:
-            print('어딜 공격하시겠습니까?')
+            print(self.translation.attack_where)
             target = self.target_chooser.get_choice()
 
         return weapon, target
 
     def get_bow_choice(self, actor: Actor):
-        print('무슨 활로 공격하시겠습니까?')
+        print(self.translation.which_bow)
         self.weapon_chooser.add_choices_list(self.find_weapon(actor.items, AttackType.ranged))
         weapon = self.weapon_chooser.get_choice()
 
-        print('무슨 부위를 공격하시겠습니까?')
+        print(self.translation.which_part)
         target = self.target_chooser.get_choice()
 
         return weapon, target
 
     def get_fight_choice(self, actor: Actor):
         chooser = ChoiceGenerator()
-        chooser.add_choices_list(['달려들기','활 꺼내기','마법 준비하기','무시'])
+        chooser.add_choices_list(self.translation.fight_choice)
         choice = chooser.get_choice(return_choice_id=True)
         if choice == 1:
             return self.get_physical_choice(actor)

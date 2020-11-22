@@ -18,13 +18,6 @@ ERASE_LINE = '\x1b[2K'
 KEY_DOWN = '\x1b[B'
 KEY_UP = '\x1b[A'
 
-# TEXTs
-MOVE_MODE = "이동"
-FIGHT_MODE = "전투"
-TALK_MODE = "대화"
-YES = '네'
-NO = '아니오'
-
 # Variables
 ANATOMY = Anatomy(head=Head(),
                 torso=Torso(),

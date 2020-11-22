@@ -49,7 +49,7 @@ generator = Generator()
 
 if not flags.is_dev:
     input('PRESS ENTER TO CONTINUE\n')
-    flags.LANG = input('Which language should I use? (en/ko) : ')
+    flags.LANG = input('Which language should be used? (en/ko) : ')
     NO_MODEL = True
     flags.model_path = os.path.join(SCRIPT_PATH,'model')
     if flags.LANG == 'ko':
