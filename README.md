@@ -8,7 +8,6 @@ A text adventure game example based on [custom pretrained GPT2](https://github.c
 
 ## Running this game
 
-**WARNING : Multilingual support is WIP. Language selection may not work properly.**
 Pre-requisites : Working python install
 Recommended : python 3.8.5 and a nvidia graphics card(supports CUDA 10.1) with more than 6GB VRAM
 
