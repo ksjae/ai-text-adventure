@@ -3,35 +3,40 @@ from aita.customclass import *
 from aita.constants import *
 from aita.generator import *
 from tqdm import tqdm
-from pathlib import Path
 
 import os
 import sys
-import time
 import requests
 
 flags = AppFlags()
 flags.is_dev = False
 flags.use_generator = True
 
-def download_model():
-    filesize = int(requests.head(url).headers["Content-Length"])
-    filename = os.path.basename(url)
-    dl_path = os.path.join(SCRIPT_PATH, 'model', filename)
-    chunk_size = 1024
-    with requests.get(url, stream=True) as r, open(dl_path, "wb") as f, tqdm(
-        unit="B",  # unit string to be displayed.
-        unit_scale=True,  # let tqdm to determine the scale in kilo, mega..etc.
-        unit_divisor=1024,  # is used when unit_scale is true
-        total=filesize,  # the total iteration.
-        file=sys.stdout,  # default goes to stderr, this is the display on console.
-        desc=filename  # prefix to be displayed on progress bar.
-        ) as progress:
-            for chunk in r.iter_content(chunk_size=chunk_size):
-                # download the file chunk by chunk
-                datasize = f.write(chunk)
-                # on each chunk update the progress bar.
-                progress.update(datasize)
+def download_model(lang):
+    if lang == 'ko':
+        MODEL_URLS = MODEL_URL_KO
+    elif lang == 'en':
+        MODEL_URLS = MODEL_URL_EN
+    else:
+        raise NonExistent
+    for url in MODEL_URLS:
+        filesize = int(requests.head(url).headers["Content-Length"])
+        filename = os.path.basename(url)
+        dl_path = os.path.join(SCRIPT_PATH, 'model', filename)
+        chunk_size = 1024
+        with requests.get(url, stream=True) as r, open(dl_path, "wb") as f, tqdm(
+            unit="B",  # unit string to be displayed.
+            unit_scale=True,  # let tqdm to determine the scale in kilo, mega..etc.
+            unit_divisor=1024,  # is used when unit_scale is true
+            total=filesize,  # the total iteration.
+            file=sys.stdout,  # default goes to stderr, this is the display on console.
+            desc=filename  # prefix to be displayed on progress bar.
+            ) as progress:
+                for chunk in r.iter_content(chunk_size=chunk_size):
+                    # download the file chunk by chunk
+                    datasize = f.write(chunk)
+                    # on each chunk update the progress bar.
+                    progress.update(datasize)
 
 def checkInternetRequests(url='http://www.google.com/', timeout=3):
     '''
@@ -39,10 +44,9 @@ def checkInternetRequests(url='http://www.google.com/', timeout=3):
     source: https://medium.com/better-programming/how-to-check-the-users-internet-connection-in-python-224e32d870c8
     '''
     try:
-        r = requests.head(url, timeout=timeout)
+        requests.head(url, timeout=timeout)
         return True
     except requests.ConnectionError as ex:
-        print(ex)
         return False
 
 generator = Generator()
@@ -68,15 +72,15 @@ if not flags.is_dev:
     if NO_MODEL:
         print("AI model is not found. Download it?", end='')
         if input('(Y/n)').lower() == 'y':
-            download_model()
+            download_model(flags.LANG)
         else: 
             print('Using online feature.')
             if checkInternetRequests() is False:
                 print("INTERNET REQUIRED. Please check internet connectivity or change back to local mode.")
                 quit()
-            
+
     print('LOADING...')
-    
+
     if flags.model_type == 'torch':
         generator = HFGenerator(flags.model_path)
 
