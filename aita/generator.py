@@ -3,12 +3,12 @@ import os
 import argparse
 import json
 import re
-import click
+import keyboard
 
 from aita.customclass import *
 from aita.constants import *
 from aita.translation import Translation
-from termios import tcflush, TCIFLUSH
+from aita.utils import Console
 
 TOP_P = 0.9
 TOP_K = 0 # 0 sets to greedy mode.
@@ -163,26 +163,30 @@ class ChoiceGenerator:
 
     def get_choice(self, skip_newline=False, return_choice_id = False):
         choice_num = 0
+        console = Console()
         while True:
             self.print_choices(choice_num, skip_newline=skip_newline)
-            tcflush(sys.stdin, TCIFLUSH)
-            rawinput = click.getchar()
-            if rawinput == '\x0D':
-                break
-            if rawinput == KEY_DOWN:
+            console.flush()
+            keyboard.read_key()
+            if keyboard.is_pressed('down'):
                 choice_num += 1
                 if choice_num >= len(self.choices):
                     choice_num = len(self.choices) - 1
-            elif rawinput == KEY_UP:
+            elif keyboard.is_pressed('up'):
                 choice_num -= 1
                 if choice_num < 0:
                     choice_num = 0
+            for i, _ in enumerate(self.choices):
+                if keyboard.is_pressed(str(i+1)):
+                    choice_num = i
+                    if return_choice_id:
+                        return choice_num
+                    return self.choices[choice_num]
             for _ in self.choices:
                 sys.stdout.write(CURSOR_UP_ONE) 
                 sys.stdout.write(ERASE_LINE)
-        for _ in self.choices:
-            sys.stdout.write(CURSOR_UP_ONE) 
-            sys.stdout.write(ERASE_LINE) 
+            if keyboard.is_pressed('enter'):
+                break
         sys.stdout.flush()
         if return_choice_id:
             return choice_num

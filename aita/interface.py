@@ -2,12 +2,14 @@ from aita.customclass import *
 from aita.generator import *
 from aita.constants import *
 from aita.translation import *
-from termios import tcflush, TCIOFLUSH
+from aita.utils import Console
 import os
 import random
 import sys
 import time
-import click
+import keyboard
+
+console = Console()
 
 def print_welcome():
     print('-'*80)
@@ -23,35 +25,38 @@ def get_choice(choices, skip_newline = False, return_choice_id = False):
                 print(f"   {i+1}. {choice}", end='')
             if not skip_newline:
                 print('')
-        tcflush(sys.stdin, TCIFLUSH)
-        rawinput = click.getchar()
-        if rawinput == '\x0D':
-            break
-        if rawinput == KEY_DOWN:
+        console.flush()
+        key = keyboard.read_key()
+        keyboard.read_key()
+        if key == 'down':
             choice_num += 1
             if choice_num >= len(choices):
                 choice_num = len(choices) - 1
-        elif rawinput == KEY_UP:
+        elif key == 'up':
             choice_num -= 1
             if choice_num < 0:
                 choice_num = 0
         for _ in choices:
             sys.stdout.write(CURSOR_UP_ONE) 
-            sys.stdout.write(ERASE_LINE) 
+            sys.stdout.write(ERASE_LINE)
+        if key == 'enter':
+            break
+        try:
+            choice_num = int(key) - 1
+            break
+        except:
+            pass
     if return_choice_id:
         return choice_num
-    for _ in choices:
-            sys.stdout.write(CURSOR_UP_ONE) 
-            sys.stdout.write(ERASE_LINE)
     sys.stdout.flush()
     return choices[choice_num]
 
 def get_random_initial_prompt(LANG, translation: Translation):
-    plot = open(os.path.join(DATA_PATH,LANG,'plot')).read().split('\n')
-    protagonist_explanation = open(os.path.join(DATA_PATH,LANG,'protagonist_explanation')).read().split('\n')
-    protagonist_type = open(os.path.join(DATA_PATH,LANG,'protagonist_type')).read().split('\n')
-    story_about = open(os.path.join(DATA_PATH,LANG,'story_about')).read().split('\n')
-    story_begin = open(os.path.join(DATA_PATH,LANG,'story_begin')).read().split('\n')
+    plot = open(os.path.join(DATA_PATH,LANG,'plot'),'r',encoding="utf-8").read().split('\n')
+    protagonist_explanation = open(os.path.join(DATA_PATH,LANG,'protagonist_explanation'),'r',encoding="utf-8").read().split('\n')
+    protagonist_type = open(os.path.join(DATA_PATH,LANG,'protagonist_type'),'r',encoding="utf-8").read().split('\n')
+    story_about = open(os.path.join(DATA_PATH,LANG,'story_about'),'r',encoding="utf-8").read().split('\n')
+    story_begin = open(os.path.join(DATA_PATH,LANG,'story_begin'),'r',encoding="utf-8").read().split('\n')
 
     actor_string = translation.actor_string(protagonist_explanation, protagonist_type)
     story_start_string = translation.story_start_string(story_begin, story_about, plot)
