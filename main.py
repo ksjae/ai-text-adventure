@@ -14,7 +14,7 @@ flags = AppFlags()
 flags.is_dev = False
 flags.use_generator = True
 
-def download_model():
+def download_model(url):
     filesize = int(requests.head(url).headers["Content-Length"])
     filename = os.path.basename(url)
     dl_path = os.path.join(SCRIPT_PATH, 'model', filename)
@@ -48,27 +48,27 @@ def checkInternetRequests(url='http://www.google.com/', timeout=3):
 generator = Generator()
 
 if not flags.is_dev:
-    input('PRESS ENTER TO CONTINUE\n')
     flags.LANG = input('Which language should be used? (en/ko) : ')
     NO_MODEL = True
     flags.model_path = os.path.join(SCRIPT_PATH,'model')
     if flags.LANG == 'ko':
         if os.path.exists(os.path.join(SCRIPT_PATH,'model','pytorch_model.bin')):
-            flags.model_type = 'torch'
+            flags.model_type = 'pt'
             NO_MODEL = False
         elif os.path.exists(os.path.join(SCRIPT_PATH,'model','model-ckpt-800000.index')):
             flags.model_type = 'tf'
             NO_MODEL = False
 
     elif flags.LANG == 'en':
-        flags.model_type = 'torch'
+        flags.model_type = 'pt'
         flags.model_path = 'gpt2'
         NO_MODEL = False
 
     if NO_MODEL:
         print("AI model is not found. Download it?", end='')
         if input('(Y/n)').lower() == 'y':
-            download_model()
+            for url in MODEL_URL[flags.LANG]:
+                download_model(url)
         else: 
             print('Using online feature.')
             if checkInternetRequests() is False:
@@ -77,7 +77,7 @@ if not flags.is_dev:
             
     print('LOADING...')
     
-    if flags.model_type == 'torch':
-        generator = HFGenerator(flags.model_path)
+    if flags.model_type == 'pt':
+        generator = HFGenerator(flags, flags.model_path)
 
 main(flags, generator)

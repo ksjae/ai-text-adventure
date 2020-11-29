@@ -97,14 +97,20 @@ class TFGenerator(Generator):
         return None
 
 class HFGenerator:
-    def __init__(self, model_path=HF_MODEL_PATH):
-        from transformers import TFGPT2LMHeadModel, GPT2Tokenizer
-        self.tokenizer = GPT2Tokenizer.from_pretrained(model_path)
-        self.model = TFGPT2LMHeadModel.from_pretrained(model_path, pad_token_id=self.tokenizer.eos_token_id)
+    def __init__(self, flags, model_path=HF_MODEL_PATH):
+        if flags.model_type == 'tf':
+            from transformers import TFGPT2LMHeadModel, GPT2Tokenizer
+            self.tokenizer = GPT2Tokenizer.from_pretrained(model_path)
+            self.model = TFGPT2LMHeadModel.from_pretrained(model_path, pad_token_id=self.tokenizer.eos_token_id)
+        else:
+            from transformers import GPT2LMHeadModel, GPT2Tokenizer
+            self.tokenizer = GPT2Tokenizer.from_pretrained(model_path)
+            self.model = GPT2LMHeadModel.from_pretrained(model_path, pad_token_id=self.tokenizer.eos_token_id)
+        self.flags = flags
     def from_prompt(self, prompt="...", length=50, remove_prompt=False):
-        if prompt is None:
-            prompt = '. '
-        input_ids = self.tokenizer.encode(prompt, return_tensors='tf')
+        if prompt is None or prompt == "":
+            return ""
+        input_ids = self.tokenizer.encode(prompt, return_tensors=self.flags.model_type)
         if input_ids is None:
             return ""
         sample_outputs = self.model.generate(
