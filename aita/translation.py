@@ -56,7 +56,7 @@ class EN(Translation):
     load = "Enter 'load'(without quotes) to load from save file(Press Enter to skip):"
     supported_fantasy_types = ["heroic","historical","medieval","sword & sorcery","comic","epic","dark","dystopian","realistic"]
     select_fantasy_type = 'Select the (fantasy) type you want:'
-    hello_msg = "\n\nYou are now the main character, the narrator, the curator of the story. Enjoy and write down the story.\n\n"
+    hello_msg = "\n\nYou are now the main character, the narrator, the curator of the story. Enjoy the story.\n\n"
     save_howto = "* Enter 'save'(without quotes) to save. Save on Exit is enabled."
     simple_mode_prompt = "Activate Simple Mode?"
     yes = "Yes"

@@ -3,11 +3,9 @@ from aita.customclass import *
 from aita.constants import *
 from aita.generator import *
 from tqdm import tqdm
-from pathlib import Path
 
 import os
 import sys
-import time
 import requests
 
 flags = AppFlags()
@@ -33,16 +31,16 @@ def download_model(url):
                 # on each chunk update the progress bar.
                 progress.update(datasize)
 
+
 def checkInternetRequests(url='http://www.google.com/', timeout=3):
     '''
     Checks for internet connectivity
     source: https://medium.com/better-programming/how-to-check-the-users-internet-connection-in-python-224e32d870c8
     '''
     try:
-        r = requests.head(url, timeout=timeout)
+        requests.head(url, timeout=timeout)
         return True
     except requests.ConnectionError as ex:
-        print(ex)
         return False
 
 generator = Generator()
@@ -74,10 +72,11 @@ if not flags.is_dev:
             if checkInternetRequests() is False:
                 print("INTERNET REQUIRED. Please check internet connectivity or change back to local mode.")
                 quit()
-            
+
     print('LOADING...')
     
     if flags.model_type == 'pt':
         generator = HFGenerator(flags, flags.model_path)
+
 
 main(flags, generator)

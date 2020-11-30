@@ -27,6 +27,7 @@ Edit the following files at your leisure -
 - ```errors.py``` for custom error handling
 - ```generator.py``` for text generation (HuggingFace transformers & [KoGPT](https://github.com/ksjae/KoGPT) compatible)
 - ```interface.py``` for user interface (terminal)
+- ```translation.py``` for translations
 - ```utils.py``` for utility functions (i.e. custom sort)
 
 ## LICENSE
@@ -36,5 +37,7 @@ This does not override other licenses set to parts of this repository such as co
 
 ### LICENSES by parts
 [The Korean GPT2](https://github.com/ksjae/KoGPT): Public Domain
+
 [Initial Story Generator(EN)](https://blog.reedsy.com): Non-commercial
+
 Initial Story Generator (Korean Translation): Non-commercial, Attribution
