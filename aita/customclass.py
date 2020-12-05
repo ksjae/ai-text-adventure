@@ -1,5 +1,4 @@
 from enum import Enum
-from python_console_menu import AbstractMenu
 import random
 
 from aita.errors import *
