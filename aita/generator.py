@@ -3,13 +3,12 @@ import os
 import argparse
 import json
 import re
-import click
-import random
+import keyboard
 
 from aita.customclass import *
 from aita.constants import *
 from aita.translation import Translation
-from termios import tcflush, TCIFLUSH
+from aita.utils import Console
 
 TOP_P = 0.9
 TOP_K = 0 # 0 sets to greedy mode.
@@ -98,14 +97,20 @@ class TFGenerator(Generator):
         return None
 
 class HFGenerator:
-    def __init__(self, model_path=HF_MODEL_PATH):
-        from transformers import TFGPT2LMHeadModel, GPT2Tokenizer
-        self.tokenizer = GPT2Tokenizer.from_pretrained(model_path)
-        self.model = TFGPT2LMHeadModel.from_pretrained(model_path, pad_token_id=self.tokenizer.eos_token_id)
+    def __init__(self, flags, model_path=HF_MODEL_PATH):
+        if flags.model_type == 'tf':
+            from transformers import TFGPT2LMHeadModel, GPT2Tokenizer
+            self.tokenizer = GPT2Tokenizer.from_pretrained(model_path)
+            self.model = TFGPT2LMHeadModel.from_pretrained(model_path, pad_token_id=self.tokenizer.eos_token_id)
+        else:
+            from transformers import GPT2LMHeadModel, GPT2Tokenizer
+            self.tokenizer = GPT2Tokenizer.from_pretrained(model_path)
+            self.model = GPT2LMHeadModel.from_pretrained(model_path, pad_token_id=self.tokenizer.eos_token_id)
+        self.flags = flags
     def from_prompt(self, prompt="...", length=50, remove_prompt=False):
-        if prompt is None:
-            prompt = '. '
-        input_ids = self.tokenizer.encode(prompt, return_tensors='tf')
+        if prompt is None or prompt == "":
+            return ""
+        input_ids = self.tokenizer.encode(prompt, return_tensors=self.flags.model_type)
         if input_ids is None:
             return ""
         sample_outputs = self.model.generate(
@@ -164,26 +169,30 @@ class ChoiceGenerator:
 
     def get_choice(self, skip_newline=False, return_choice_id = False):
         choice_num = 0
+        console = Console()
         while True:
             self.print_choices(choice_num, skip_newline=skip_newline)
-            tcflush(sys.stdin, TCIFLUSH)
-            rawinput = click.getchar()
-            if rawinput == '\x0D':
-                break
-            if rawinput == KEY_DOWN:
+            console.flush()
+            keyboard.read_key()
+            if keyboard.is_pressed('down'):
                 choice_num += 1
                 if choice_num >= len(self.choices):
                     choice_num = len(self.choices) - 1
-            elif rawinput == KEY_UP:
+            elif keyboard.is_pressed('up'):
                 choice_num -= 1
                 if choice_num < 0:
                     choice_num = 0
+            for i, _ in enumerate(self.choices):
+                if keyboard.is_pressed(str(i+1)):
+                    choice_num = i
+                    if return_choice_id:
+                        return choice_num
+                    return self.choices[choice_num]
             for _ in self.choices:
                 sys.stdout.write(CURSOR_UP_ONE) 
                 sys.stdout.write(ERASE_LINE)
-        for _ in self.choices:
-            sys.stdout.write(CURSOR_UP_ONE) 
-            sys.stdout.write(ERASE_LINE) 
+            if keyboard.is_pressed('enter'):
+                break
         sys.stdout.flush()
         if return_choice_id:
             return choice_num
