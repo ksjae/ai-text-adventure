@@ -4,6 +4,7 @@ import argparse
 import json
 import re
 import click
+import random
 
 from aita.customclass import *
 from aita.constants import *
@@ -283,10 +284,14 @@ class NPCGen():
     Generates NPCs.
     NPC: *All* default in-game character
     '''
-    def __init__(self, **defaults):
+    def __init__(self, randomize=True, stat=Stat(0,0), gold=Gold(0)):
         '''
         Initialize a NPC making factory - such as police, etc.
         '''
-        pass
+        self.stat = stat
+        self.gold = gold
     def generate(self):
-        return Actor()
+        actor = Actor()
+        if randomize:
+            pass
+        return actor

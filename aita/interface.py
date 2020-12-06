@@ -2,7 +2,7 @@ from aita.customclass import *
 from aita.generator import *
 from aita.constants import *
 from aita.translation import *
-from termios import tcflush, TCIOFLUSH
+from termios import tcflush, TCIFLUSH
 import os
 import random
 import sys

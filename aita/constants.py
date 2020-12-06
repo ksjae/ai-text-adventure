@@ -12,12 +12,6 @@ MODEL_URL_EN = ["https://cdn.huggingface.co/gpt2-xl-pytorch_model.bin"]
 API_ENDPOINT = "https://static.ksjit.com/"
 AUTH_ENDPOINT = "https://static.ksjit.com/"
 
-# KEY CODES
-CURSOR_UP_ONE = '\x1b[1A' 
-ERASE_LINE = '\x1b[2K' 
-KEY_DOWN = '\x1b[B'
-KEY_UP = '\x1b[A'
-
 # Variables
 ANATOMY = Anatomy(head=Head(),
                 torso=Torso(),
