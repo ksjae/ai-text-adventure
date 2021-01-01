@@ -30,7 +30,7 @@ def get_choice(choices, skip_newline = False, return_choice_id = False):
         keyboard.read_key()
         if key == 'down':
             choice_num += 1
-            if choice_num >= len(choices):
+            if choice_num == len(choices):
                 choice_num = len(choices) - 1
         elif key == 'up':
             choice_num -= 1
@@ -148,6 +148,7 @@ def run_adventure(flags, generator: Generator, translation: Translation):
         
     else:
         while True:
+            keyboard.read_key()
             user_input = input('> ')
             if user_input == 'save':
                 save()

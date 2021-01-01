@@ -48,12 +48,12 @@ generator = Generator()
 if not flags.is_dev:
     flags.LANG = input('Which language should be used? (en/ko) : ')
     NO_MODEL = True
-    flags.model_path = os.path.join(SCRIPT_PATH,'model')
     if flags.LANG == 'ko':
-        if os.path.exists(os.path.join(SCRIPT_PATH,'model','pytorch_model.bin')):
+        flags.model_path = os.path.join(SCRIPT_PATH,'model','ko')
+        if os.path.exists(os.path.join(SCRIPT_PATH,'model','ko','pytorch_model.bin')):
             flags.model_type = 'pt'
             NO_MODEL = False
-        elif os.path.exists(os.path.join(SCRIPT_PATH,'model','model-ckpt-800000.index')):
+        elif os.path.exists(os.path.join(SCRIPT_PATH,'model','ko','model-ckpt-800000.index')):
             flags.model_type = 'tf'
             NO_MODEL = False
 
