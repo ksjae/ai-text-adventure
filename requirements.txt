@@ -5,4 +5,4 @@ python-console-menu==1.1.0
 tqdm
 keyboard
 requests
-numpy==1.19.3
+numpy==1.22.0
